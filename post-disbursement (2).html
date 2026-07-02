@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post Disbursement | HLMS</title>
+<style>
+  :root{
+    --navy: #0f2942;
+    --navy-light: #16395c;
+    --teal: #0d7a6f;
+    --teal-light: #e6f4f2;
+    --amber: #b8790a;
+    --amber-light: #fbf1e0;
+    --ink: #1c2733;
+    --ink-soft: #55636f;
+    --line: #e2e6ea;
+    --bg: #f5f7f9;
+    --card: #ffffff;
+    --radius: 10px;
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Inter', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  a{ text-decoration:none; color:inherit; }
+  button{ font-family:inherit; cursor:pointer; }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background: var(--navy);
+    color:#fff;
+    padding: 0 24px;
+    height: 64px;
+    position: sticky;
+    top:0;
+    z-index: 50;
+  }
+  .topbar-left{ display:flex; align-items:center; gap:16px; }
+  .menu-icon{
+    width:20px; height:14px; position:relative; cursor:pointer;
+  }
+  .menu-icon span{
+    display:block; height:2px; background:#cfe0e8; margin:4px 0; border-radius:2px;
+  }
+  .brand{ display:flex; flex-direction:column; line-height:1.15; }
+  .brand-name{ font-size:19px; font-weight:700; letter-spacing:0.5px; }
+  .brand-sub{ font-size:11px; color:#a9c1cf; font-weight:400; }
+
+  .search-wrap{
+    flex:1;
+    max-width: 480px;
+    margin: 0 32px;
+    position:relative;
+  }
+  .search-wrap input{
+    width:100%;
+    padding:9px 14px 9px 38px;
+    border-radius: 20px;
+    border:none;
+    background: rgba(255,255,255,0.12);
+    color:#fff;
+    font-size:13.5px;
+    outline:none;
+  }
+  .search-wrap input::placeholder{ color:#b7cbd6; }
+  .search-icon{
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    width:14px; height:14px; opacity:0.7;
+  }
+
+  .topbar-right{ display:flex; align-items:center; gap:20px; }
+  .icon-btn{
+    width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background: rgba(255,255,255,0.08);
+    position:relative;
+    border:none;
+  }
+  .icon-btn svg{ width:16px; height:16px; stroke:#dce8ee; }
+  .dot{
+    position:absolute; top:6px; right:6px;
+    width:7px; height:7px; border-radius:50%;
+    background:#e2963c; border:1.5px solid var(--navy);
+  }
+  .user-chip{ display:flex; align-items:center; gap:9px; padding-left:10px; border-left:1px solid rgba(255,255,255,0.15); }
+  .avatar{
+    width:32px; height:32px; border-radius:50%;
+    background: var(--teal);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:600; color:#fff;
+  }
+  .user-name{ font-size:13.5px; font-weight:600; }
+  .caret{ font-size:10px; color:#a9c1cf; }
+
+  /* ---------- Layout ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns: 240px 1fr;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    background:#fff;
+    border-right:1px solid var(--line);
+    padding: 20px 0;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+  }
+  .nav-list{ list-style:none; margin:0; padding:0; }
+  .nav-item{
+    display:flex; align-items:center; gap:12px;
+    padding: 11px 22px;
+    font-size:14px;
+    color: var(--ink-soft);
+    font-weight:500;
+    border-left:3px solid transparent;
+    cursor:pointer;
+  }
+  .nav-item svg{ width:17px; height:17px; stroke:currentColor; flex-shrink:0; }
+  .nav-item:hover{ background: #f6f8fa; color: var(--navy); }
+  .nav-item.active{
+    background: var(--teal-light);
+    color: var(--teal);
+    border-left-color: var(--teal);
+    font-weight:700;
+  }
+  .nav-badge{
+    font-size:9.5px; font-weight:700; background: var(--amber); color:#fff;
+    padding:2px 6px; border-radius:10px; letter-spacing:0.3px;
+  }
+
+  .help-card{
+    margin: 16px 18px 0;
+    background: var(--navy);
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    text-align:center;
+    color:#fff;
+  }
+  .help-icon{
+    width:42px; height:42px; margin:0 auto 10px;
+    border-radius:50%;
+    background: rgba(255,255,255,0.12);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .help-icon svg{ width:20px; height:20px; stroke:#fff; }
+  .help-card h4{ margin:0 0 4px; font-size:13.5px; }
+  .help-card p{ margin:0 0 14px; font-size:11.5px; color:#b7cbd6; }
+  .help-btn{
+    width:100%; padding:9px; border-radius:7px; border:none;
+    background: var(--teal); color:#fff; font-size:12.5px; font-weight:600;
+  }
+
+  /* ---------- Main content ---------- */
+  .main{ padding: 28px 32px 60px; }
+
+  .page-header{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    flex-wrap:wrap; gap:16px;
+    margin-bottom: 22px;
+  }
+  .page-header h1{ margin:0 0 4px; font-size:24px; color: var(--navy); letter-spacing:-0.3px; }
+  .page-header p{ margin:0; font-size:13.5px; color: var(--ink-soft); }
+
+  .account-select{
+    background:#fff; border:1px solid var(--line); border-radius: var(--radius);
+    padding: 8px 14px; min-width:260px;
+  }
+  .account-select label{ display:block; font-size:10.5px; color:var(--ink-soft); font-weight:600; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:3px; }
+  .account-select .row{ display:flex; align-items:center; justify-content:space-between; }
+  .account-select .row span{ font-size:14px; font-weight:700; color:var(--navy); }
+  .account-select .row svg{ width:14px; height:14px; stroke:var(--ink-soft); }
+
+  .disbursed-tag{
+    align-self:center; font-size:12.5px; color: var(--ink-soft);
+    margin-top: -4px;
+  }
+  .disbursed-tag strong{ color: var(--navy); }
+
+  /* ---------- Cards ---------- */
+  .card{
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+  }
+  .card h2{
+    font-size: 15px; margin: 0 0 16px;
+    color: var(--navy);
+    display:flex; align-items:center; gap:8px;
+  }
+  .card h2 svg{ width:17px; height:17px; stroke: var(--teal); }
+
+  .grid-3{
+    display:grid;
+    grid-template-columns: 1.4fr 1fr 0.9fr;
+    gap: 18px;
+    margin-bottom: 18px;
+    align-items: stretch;
+  }
+
+  /* Loan summary card */
+  .loan-summary{ display:flex; gap:20px; }
+  .house-icon{ flex-shrink:0; width:120px; display:flex; align-items:flex-end; justify-content:center; }
+  .house-icon svg{ width:110px; height:110px; }
+
+  .fact-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px 26px;
+    flex:1;
+  }
+  .fact label{
+    display:block; font-size:10.5px; font-weight:700; color: var(--teal);
+    text-transform:uppercase; letter-spacing:0.4px; margin-bottom:3px;
+  }
+  .fact .val{ font-size:14.5px; font-weight:600; color: var(--navy); }
+  .fact .val.money::before{ content:"₹ "; font-weight:400; color:var(--ink-soft); }
+
+  /* Quick links card */
+  .quick-links{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+  .quick-links li{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--line);
+    font-size:13.5px; font-weight:600; color: var(--ink);
+    cursor:pointer;
+  }
+  .quick-links li:last-child{ border-bottom:none; }
+  .quick-links li svg{ width:14px; height:14px; stroke: var(--teal); }
+  .quick-links li:hover{ color: var(--teal); }
+
+  /* Three-up detail row */
+  .grid-3b{
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+    align-items:stretch;
+  }
+  .detail-row{ display:flex; justify-content:space-between; gap:10px; padding: 7px 0; font-size:13px; border-bottom:1px dashed var(--line); }
+  .detail-row:last-of-type{ border-bottom:none; }
+  .detail-row .k{ color: var(--ink-soft); flex-shrink:0; }
+  .detail-row .v{ color: var(--ink); font-weight:600; text-align:right; }
+
+  .status-pill{
+    display:inline-block; font-size:11px; font-weight:700;
+    padding:3px 10px; border-radius:20px;
+    background: var(--teal-light); color: var(--teal);
+  }
+
+  .ghost-btn{
+    width:100%; margin-top:16px; padding:10px; border-radius:8px;
+    border:1px solid var(--line); background:#fafcfd; color: var(--navy);
+    font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .ghost-btn:hover{ border-color: var(--teal); color: var(--teal); }
+  .ghost-btn svg{ width:15px; height:15px; }
+
+  /* Insurance */
+  .insurance-item{ margin-bottom:16px; }
+  .insurance-item:last-of-type{ margin-bottom:0; }
+  .insurance-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+  .insurance-top .name{ font-size:13.5px; font-weight:600; }
+  .active-pill{
+    font-size:10.5px; font-weight:700; color:#1f8a4c; background:#e7f6ec;
+    padding:3px 10px; border-radius:20px;
+  }
+  .insurance-valid{ font-size:12px; color: var(--ink-soft); }
+  .insurance-divider{ height:1px; background:var(--line); margin:14px 0; }
+
+  /* Bottom row: checklist + uploads */
+  .grid-2{
+    display:grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 18px;
+  }
+  .card-desc{ font-size:12.5px; color: var(--ink-soft); margin:-10px 0 16px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  thead th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.3px;
+    color: var(--ink-soft); font-weight:700; padding: 8px 6px; border-bottom:2px solid var(--line);
+  }
+  tbody td{ padding: 11px 6px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tbody tr:last-child td{ border-bottom:none; }
+  .activity-cell{ display:flex; align-items:center; gap:9px; font-weight:600; }
+  .check-badge{
+    width:20px; height:20px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background: var(--teal-light);
+  }
+  .check-badge svg{ width:11px; height:11px; stroke: var(--teal); }
+  .check-badge.pending{ background: var(--amber-light); }
+  .check-badge.pending svg{ stroke: var(--amber); }
+  .desc-cell{ color: var(--ink-soft); }
+  .status-tag{
+    font-size:11px; font-weight:700; padding:3px 9px; border-radius:6px; white-space:nowrap;
+  }
+  .status-tag.completed{ background: var(--teal-light); color: var(--teal); }
+  .status-tag.progress{ background: var(--amber-light); color: var(--amber); }
+  .view-link{ font-size:12.5px; font-weight:600; color: var(--teal); display:flex; align-items:center; gap:4px; }
+  .view-link svg{ width:12px; height:12px; }
+  .muted{ color:#b7c0c8; }
+
+  /* Upload card */
+  .dropzone{
+    border: 2px dashed #c9d3da;
+    border-radius: 10px;
+    padding: 28px 16px;
+    text-align:center;
+    background: #fafcfd;
+  }
+  .dropzone svg{ width:30px; height:30px; stroke: var(--teal-light); stroke: #9db3bd; margin-bottom:10px; }
+  .dropzone p{ margin:0 0 4px; font-size:13px; font-weight:600; color: var(--navy); }
+  .dropzone .or{ font-size:11.5px; color: var(--ink-soft); margin-bottom:12px; }
+  .choose-btn{
+    padding: 8px 18px; border-radius:7px; border:1px solid var(--teal);
+    background:#fff; color: var(--teal); font-size:12.5px; font-weight:700;
+  }
+  .file-hint{ font-size:10.5px; color: var(--ink-soft); margin-top:10px; }
+
+  .recent-uploads{ margin-top:20px; }
+  .recent-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .recent-head h3{ font-size:12.5px; margin:0; color: var(--navy); text-transform:uppercase; letter-spacing:0.3px; }
+  .recent-head a{ font-size:12px; font-weight:600; color: var(--teal); }
+  .upload-row{
+    display:flex; align-items:center; gap:10px;
+    padding: 9px 0; border-bottom:1px solid var(--line); font-size:12.5px;
+  }
+  .upload-row:last-child{ border-bottom:none; }
+  .file-icon{
+    width:26px; height:26px; border-radius:6px; background: var(--teal-light);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .file-icon svg{ width:13px; height:13px; stroke: var(--teal); }
+  .upload-row .fname{ flex:1; font-weight:600; color: var(--ink); }
+  .upload-row .fdate{ color: var(--ink-soft); }
+
+  .badge-new{
+    font-size:9.5px; font-weight:800; background:var(--amber); color:#fff;
+    padding:2px 7px; border-radius:10px; letter-spacing:0.3px; margin-left:8px; vertical-align:middle;
+  }
+
+  @media (max-width: 1180px){
+    .grid-3{ grid-template-columns: 1fr; }
+    .grid-3b{ grid-template-columns: 1fr; }
+    .grid-2{ grid-template-columns: 1fr; }
+  }
+  @media (max-width: 860px){
+    .layout{ grid-template-columns: 1fr; }
+    .sidebar{ display:none; }
+    .search-wrap{ display:none; }
+    .loan-summary{ flex-direction:column; }
+    .fact-grid{ grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="menu-icon"><span></span><span></span><span></span></div>
+    <div class="brand">
+      <span class="brand-name">HLMS</span>
+      <span class="brand-sub">Housing Loan Management System</span>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
+    <input type="text" placeholder="Search anything...">
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn" aria-label="Notifications">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      <span class="dot"></span>
+    </button>
+    <button class="icon-btn" aria-label="Messages">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </button>
+    <div class="user-chip">
+      <div class="avatar">JD</div>
+      <span class="user-name">John Doe</span>
+      <span class="caret">▾</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <nav>
+      <ul class="nav-list">
+        <li class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</li>
+        <li class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>Loan Guidance</li>
+        <li class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Check Eligibility</li>
+        <li class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="9" y1="15" x2="15" y2="15"/></svg>Apply for Loan</li>
+        <li class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Loan Status Tracking</li>
+        <li class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5c0-1.4 1.3-2.5 3-2.5s3 1.1 3 2.5-1.3 2-3 2.5-3 1.1-3 2.5 1.3 2.5 3 2.5 3-1.1 3-2.5"/></svg>Repayment</li>
+        <li class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>Post Disbursement</li>
+        <li class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg>Auction Management</li>
+        <li class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Documents <span class="nav-badge">NEW</span></li>
+        <li class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>Profile Settings</li>
+        <li class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Support / Help</li>
+      </ul>
+    </nav>
+
+    <div class="help-card">
+      <div class="help-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h4>Need Help?</h4>
+      <p>Our support team is here to assist you.</p>
+      <button class="help-btn">Contact Support</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <div class="page-header">
+      <div>
+        <h1>Post Disbursement</h1>
+        <p>Manage your loan after disbursement and track property &amp; account details.</p>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+        <div class="account-select">
+          <label>Select Loan Account</label>
+          <div class="row">
+            <span>HL1234567890 - Home Loan</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="disbursed-tag">Disbursed on: <strong>20 May 2024</strong></div>
+      </div>
+    </div>
+
+    <!-- Row 1: Loan summary / Quick links -->
+    <div class="grid-3">
+      <div class="card loan-summary" style="grid-column: span 2;">
+        <div>
+          <div class="house-icon">
+            <svg viewBox="0 0 100 100" fill="none" stroke="#0d7a6f" stroke-width="2">
+              <path d="M15 50 L50 22 L85 50" />
+              <rect x="25" y="50" width="50" height="35" />
+              <rect x="42" y="65" width="10" height="20" fill="#e6f4f2"/>
+              <rect x="58" y="55" width="10" height="10" fill="#e6f4f2"/>
+              <line x1="10" y1="85" x2="90" y2="85" stroke="#c9d3da"/>
+            </svg>
+          </div>
+        </div>
+        <div class="fact-grid">
+          <div class="fact"><label>Loan Account No.</label><div class="val">HL1234567890</div></div>
+          <div class="fact"><label>Loan Tenure</label><div class="val">20 Years</div></div>
+          <div class="fact"><label>Loan Type</label><div class="val">Home Loan</div></div>
+          <div class="fact"><label>Interest Rate (p.a.)</label><div class="val">8.50%</div></div>
+          <div class="fact"><label>Loan Amount</label><div class="val money">42,50,000</div></div>
+          <div class="fact"><label>EMI Amount</label><div class="val money">32,742</div></div>
+          <div class="fact"><label>Disbursed Amount</label><div class="val money">42,50,000</div></div>
+          <div class="fact"><label>Next EMI Due</label><div class="val">05 Jun 2024</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg>Quick Links</h2>
+        <ul class="quick-links">
+          <li>View Repayment Schedule <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></li>
+          <li>View Amortization Schedule <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></li>
+          <li>Payment History <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></li>
+          <li>Download Disbursement Letter <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Row 2: Disbursement / Property / Insurance -->
+    <div class="grid-3b">
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Disbursement Details</h2>
+        <div class="detail-row"><span class="k">Disbursement Date</span><span class="v">20 May 2024</span></div>
+        <div class="detail-row"><span class="k">Reference No.</span><span class="v">DISB/2024/56789</span></div>
+        <div class="detail-row"><span class="k">Disbursed To</span><span class="v">John Doe</span></div>
+        <div class="detail-row"><span class="k">Disbursement Mode</span><span class="v">NEFT</span></div>
+        <div class="detail-row"><span class="k">Disbursed To Bank</span><span class="v">HDFC Bank - 1234</span></div>
+        <div class="detail-row"><span class="k">Purpose</span><span class="v">Purchase of Residential Property</span></div>
+        <button class="ghost-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>View Disbursement Letter</button>
+      </div>
+
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Property Details</h2>
+        <div class="detail-row"><span class="k">Property Address</span><span class="v">123, Green Park, Bangalore - 560001, Karnataka, India</span></div>
+        <div class="detail-row"><span class="k">Property Type</span><span class="v">Residential</span></div>
+        <div class="detail-row"><span class="k">Property Value</span><span class="v">₹ 50,00,000</span></div>
+        <div class="detail-row"><span class="k">Loan To Value (LTV)</span><span class="v">85%</span></div>
+        <div class="detail-row"><span class="k">Legal Verification</span><span class="v"><span class="status-pill">Completed</span></span></div>
+        <button class="ghost-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>View Property Documents</button>
+      </div>
+
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/></svg>Insurance Details</h2>
+        <div class="insurance-item">
+          <div class="insurance-top"><span class="name">Property Insurance</span><span class="active-pill">Active</span></div>
+          <div class="insurance-valid">Valid till: 19 May 2025</div>
+        </div>
+        <div class="insurance-divider"></div>
+        <div class="insurance-item">
+          <div class="insurance-top"><span class="name">Life Insurance</span><span class="active-pill">Active</span></div>
+          <div class="insurance-valid">Valid till: 19 May 2044</div>
+        </div>
+        <button class="ghost-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/></svg>View All Insurance Details</button>
+      </div>
+    </div>
+
+    <!-- Row 3: Checklist / Upload -->
+    <div class="grid-2">
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Post Disbursement Checklist</h2>
+        <p class="card-desc">Important activities to be completed after loan disbursement.</p>
+        <table>
+          <thead>
+            <tr><th>Activity</th><th>Status</th><th>Completed On</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="activity-cell">
+                  <div class="check-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                  <div><div>Disbursement Completed</div><div class="desc-cell" style="font-weight:400; font-size:12px;">Loan amount has been disbursed successfully.</div></div>
+                </div>
+              </td>
+              <td><span class="status-tag completed">Completed</span></td>
+              <td>20 May 2024</td>
+              <td><span class="view-link">View <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="activity-cell">
+                  <div class="check-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                  <div><div>Document Collection</div><div class="desc-cell" style="font-weight:400; font-size:12px;">Original property documents collected.</div></div>
+                </div>
+              </td>
+              <td><span class="status-tag completed">Completed</span></td>
+              <td>22 May 2024</td>
+              <td><span class="muted">—</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="activity-cell">
+                  <div class="check-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                  <div><div>Property Verification</div><div class="desc-cell" style="font-weight:400; font-size:12px;">Property has been verified and inspected.</div></div>
+                </div>
+              </td>
+              <td><span class="status-tag completed">Completed</span></td>
+              <td>18 May 2024</td>
+              <td><span class="view-link">View <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="activity-cell">
+                  <div class="check-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                  <div><div>Insurance Activated</div><div class="desc-cell" style="font-weight:400; font-size:12px;">Property and life insurance activated.</div></div>
+                </div>
+              </td>
+              <td><span class="status-tag completed">Completed</span></td>
+              <td>20 May 2024</td>
+              <td><span class="view-link">View <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="activity-cell">
+                  <div class="check-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                  <div><div>NACH Mandate Setup</div><div class="desc-cell" style="font-weight:400; font-size:12px;">Auto-debit mandate for EMI payments.</div></div>
+                </div>
+              </td>
+              <td><span class="status-tag completed">Completed</span></td>
+              <td>20 May 2024</td>
+              <td><span class="view-link">View <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="activity-cell">
+                  <div class="check-badge pending"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><circle cx="12" cy="12" r="9"/></svg></div>
+                  <div><div>Welcome Kit Sent</div><div class="desc-cell" style="font-weight:400; font-size:12px;">Welcome kit and loan documents sent.</div></div>
+                </div>
+              </td>
+              <td><span class="status-tag progress">In Progress</span></td>
+              <td><span class="muted">—</span></td>
+              <td><span class="muted">—</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Upload Documents<span class="badge-new">NEW</span></h2>
+        <p class="card-desc">Upload required documents related to your loan and property.</p>
+        <div class="dropzone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#9db3bd" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <p>Drag and drop files here</p>
+          <div class="or">or</div>
+          <button class="choose-btn">Choose Files</button>
+          <div class="file-hint">PDF, JPG, PNG (Max. 10 MB per file)</div>
+        </div>
+
+        <div class="recent-uploads">
+          <div class="recent-head">
+            <h3>Recent Uploads</h3>
+            <a href="#">View All</a>
+          </div>
+          <div class="upload-row">
+            <div class="file-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+            <span class="fname">Property Tax Receipt.pdf</span>
+            <span class="fdate">20 May 2024</span>
+          </div>
+          <div class="upload-row">
+            <div class="file-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+            <span class="fname">Insurance Policy.pdf</span>
+            <span class="fdate">20 May 2024</span>
+          </div>
+          <div class="upload-row">
+            <div class="file-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+            <span class="fname">NOC from Builder.pdf</span>
+            <span class="fdate">19 May 2024</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="post-disbursement.js"></script>
+</body>
+</html>
