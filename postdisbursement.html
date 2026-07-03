@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLMS | Loan Guidance · Post Disbursement</title>
+<style>
+:root{
+  --navy:#1b3a5c;
+  --navy-dark:#132a44;
+  --navy-light:#264d75;
+  --teal:#2f7d78;
+  --teal-light:#e6f2f1;
+  --bg:#eef1f5;
+  --card:#ffffff;
+  --text:#1f2a37;
+  --text-mid:#4b5666;
+  --text-gray:#8a93a3;
+  --border:#e3e7ee;
+  --green:#1f9d55;
+  --green-bg:#e7f7ee;
+  --orange:#e8862c;
+  --orange-bg:#fdf1e4;
+  --red:#d64545;
+  --red-bg:#fbe9e9;
+  --purple:#6a4c9c;
+  --purple-bg:#f0ebf8;
+  --radius:12px;
+  --shadow:0 2px 10px rgba(20,40,70,0.06);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+.hidden{display:none !important;}
+a{color:var(--teal);text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 20px;border-radius:8px;border:1px solid transparent;
+  font-size:14px;font-weight:600;transition:.15s;white-space:nowrap;
+}
+.btn-primary{background:var(--navy);color:#fff;}
+.btn-primary:hover{background:var(--navy-light);}
+.btn-primary:disabled{background:#a9b6c6;cursor:not-allowed;}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-teal:hover{background:#256664;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-mid);}
+.btn-outline:hover{border-color:var(--navy);color:var(--navy);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover{background:#b83636;}
+.btn-sm{padding:7px 14px;font-size:13px;}
+.btn-link{background:none;border:none;color:var(--teal);font-weight:600;padding:0;}
+.btn-block{width:100%;}
+
+/* ---------- Auth Screen ---------- */
+#authScreen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--navy-dark),var(--navy) 60%,var(--teal));
+  padding:20px;
+}
+.auth-wrap{display:flex;background:var(--card);border-radius:18px;overflow:hidden;max-width:920px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.auth-side{flex:1;background:linear-gradient(160deg,var(--navy),var(--navy-dark));color:#fff;padding:48px 40px;display:flex;flex-direction:column;justify-content:center;gap:16px;}
+.auth-side h1{font-size:26px;margin:0;display:flex;align-items:center;gap:10px;}
+.auth-side p{color:#c9d6e5;line-height:1.6;font-size:14.5px;margin:0;}
+.auth-side ul{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;}
+.auth-side li{font-size:13.5px;color:#dbe6f2;display:flex;gap:8px;align-items:flex-start;}
+.auth-side li::before{content:"✓";color:var(--teal);font-weight:700;}
+.auth-form{flex:1;padding:44px 40px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto;}
+.auth-form h2{margin:0 0 4px;font-size:22px;}
+.auth-form .sub{color:var(--text-gray);font-size:13.5px;margin-bottom:6px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:12.5px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:.3px;}
+.field input,.field select,.field textarea{
+  padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);background:#fbfcfd;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal);}
+.field .hint{font-size:11.5px;color:var(--text-gray);}
+.field .error{font-size:12px;color:var(--red);font-weight:600;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.auth-switch{font-size:13.5px;color:var(--text-mid);text-align:center;margin-top:6px;}
+.otp-boxes{display:flex;gap:10px;justify-content:center;margin:6px 0;}
+.otp-boxes input{width:44px;height:52px;text-align:center;font-size:20px;font-weight:700;border-radius:8px;border:1px solid var(--border);}
+.demo-note{background:var(--teal-light);border:1px dashed var(--teal);color:#215c58;font-size:12px;padding:8px 10px;border-radius:8px;}
+
+/* ---------- App Shell ---------- */
+#app{min-height:100vh;}
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:64px;background:var(--navy);
+  display:flex;align-items:center;padding:0 22px;gap:18px;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.hamburger{color:#fff;font-size:20px;background:none;border:none;display:none;}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;}
+.brand .logo{width:34px;height:34px;border-radius:8px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:800;}
+.brand .title{font-weight:800;font-size:17px;line-height:1.1;}
+.brand .subtitle{font-size:10.5px;color:#b9c7da;letter-spacing:.3px;}
+.topbar-search{flex:1;max-width:520px;margin-left:20px;}
+.topbar-search input{
+  width:100%;padding:9px 14px 9px 36px;border-radius:8px;border:none;background:rgba(255,255,255,.12);
+  color:#fff;font-size:13.5px;
+}
+.topbar-search{position:relative;}
+.topbar-search::before{content:"🔍";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;opacity:.7;}
+.topbar-search input::placeholder{color:#c7d3e2;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:18px;}
+.icon-btn{position:relative;background:none;border:none;color:#dfe7f1;font-size:18px;}
+.icon-dot{position:absolute;top:-2px;right:-4px;background:var(--orange);color:#fff;font-size:9px;font-weight:700;border-radius:8px;padding:1px 4px;}
+.user-chip{display:flex;align-items:center;gap:9px;color:#fff;cursor:pointer;}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;}
+.user-name{font-size:13.5px;font-weight:600;}
+
+.sidebar{
+  position:fixed;top:64px;left:0;bottom:0;width:250px;background:#fff;border-right:1px solid var(--border);
+  padding:16px 10px;overflow-y:auto;z-index:90;
+}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:9px;color:var(--text-mid);
+  font-size:14px;font-weight:600;margin-bottom:2px;cursor:pointer;border:none;background:none;width:100%;text-align:left;
+}
+.nav-item .ic{width:18px;text-align:center;color:var(--teal);font-size:15px;}
+.nav-item:hover{background:#f3f6f9;}
+.nav-item.active{background:var(--teal-light);color:var(--navy);}
+.nav-item.active .ic{color:var(--teal);}
+.nav-badge{margin-left:auto;background:var(--orange);color:#fff;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:6px;}
+
+.main{margin-left:250px;margin-top:64px;padding:28px 32px 60px;min-height:calc(100vh - 64px);}
+.page-head{margin-bottom:22px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+.page-head h1{margin:0 0 4px;font-size:24px;color:var(--navy);}
+.page-head p{margin:0;color:var(--text-gray);font-size:14px;}
+
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-bottom:20px;border:1px solid var(--border);}
+.card h3{margin:0 0 16px;font-size:16px;color:var(--navy);display:flex;align-items:center;gap:8px;}
+.grid{display:grid;gap:20px;}
+.grid-2{grid-template-columns:1fr 1fr;}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+@media(max-width:1000px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
+
+.stat{display:flex;flex-direction:column;gap:4px;}
+.stat .lbl{font-size:11px;font-weight:700;color:var(--text-gray);text-transform:uppercase;letter-spacing:.4px;}
+.stat .val{font-size:16px;font-weight:700;color:var(--text);}
+.stat .val.teal{color:var(--teal);}
+.stat .val.green{color:var(--green);}
+.stat .val.orange{color:var(--orange);}
+.stat .val.red{color:var(--red);}
+.stat .sub{font-size:11.5px;color:var(--text-gray);}
+.clickable-row{cursor:pointer;}
+.clickable-row:hover{background:#f7f9fc;}
+
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;}
+.badge-green{background:var(--green-bg);color:var(--green);}
+.badge-orange{background:var(--orange-bg);color:var(--orange);}
+.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-gray{background:#eef1f5;color:var(--text-mid);}
+.badge-navy{background:var(--teal-light);color:var(--navy);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);}
+.back-link{font-size:13px;font-weight:700;color:var(--teal);cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;}
+.countdown-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;background:var(--orange-bg);color:var(--orange);}
+.countdown-pill.overdue{background:var(--red-bg);color:var(--red);}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th{text-align:left;padding:10px 8px;color:var(--text-gray);font-size:11.5px;text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid var(--border);}
+td{padding:11px 8px;border-bottom:1px solid var(--border);color:var(--text);}
+tr:last-child td{border-bottom:none;}
+
+.quick-links{display:flex;flex-direction:column;gap:2px;}
+.quick-links a{display:flex;justify-content:space-between;align-items:center;padding:11px 4px;color:var(--text);font-size:13.5px;font-weight:600;border-bottom:1px solid var(--border);}
+.quick-links a:last-child{border-bottom:none;}
+.quick-links a span.arrow{color:var(--teal);}
+
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--border);margin-bottom:18px;flex-wrap:wrap;}
+.tab{padding:10px 16px;font-size:13.5px;font-weight:600;color:var(--text-gray);border:none;background:none;border-bottom:2px solid transparent;}
+.tab.active{color:var(--navy);border-bottom-color:var(--teal);}
+
+.product-card{border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;background:#fbfcfd;}
+.product-card h4{margin:0;color:var(--navy);font-size:15px;}
+.product-card .rate{color:var(--teal);font-weight:800;font-size:18px;}
+.product-card .tag{align-self:flex-start;background:var(--teal-light);color:var(--teal);font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:6px;}
+.product-card .rec{align-self:flex-start;background:var(--orange-bg);color:var(--orange);font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:6px;}
+.product-card p{margin:0;font-size:12.5px;color:var(--text-mid);line-height:1.5;}
+.chk-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);}
+
+.stepper{display:flex;justify-content:space-between;margin:10px 0 26px;position:relative;}
+.stepper::before{content:"";position:absolute;top:15px;left:20px;right:20px;height:2px;background:var(--border);z-index:0;}
+.step{display:flex;flex-direction:column;align-items:center;gap:6px;z-index:1;flex:1;}
+.step .dot{width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--text-gray);}
+.step.done .dot{background:var(--green);border-color:var(--green);color:#fff;}
+.step.current .dot{background:var(--navy);border-color:var(--navy);color:#fff;}
+.step .lbl{font-size:11px;color:var(--text-gray);font-weight:600;text-align:center;max-width:90px;}
+.step.current .lbl{color:var(--navy);}
+.step.done .lbl{color:var(--green);}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(15,25,40,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+.modal-box{background:#fff;border-radius:14px;padding:28px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:88vh;overflow-y:auto;}
+.modal-box h3{margin-top:0;color:var(--navy);}
+
+.toast-wrap{position:fixed;top:76px;right:22px;z-index:2000;display:flex;flex-direction:column;gap:10px;}
+.toast{background:#fff;border-left:4px solid var(--teal);box-shadow:0 8px 24px rgba(0,0,0,.15);border-radius:8px;padding:13px 16px;font-size:13.5px;min-width:260px;max-width:340px;animation:slideIn .25s ease;}
+.toast.error{border-left-color:var(--red);}
+.toast.success{border-left-color:var(--green);}
+.toast strong{display:block;margin-bottom:2px;font-size:13px;}
+@keyframes slideIn{from{transform:translateX(30px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-gray);}
+.empty-state .ic{font-size:38px;margin-bottom:10px;}
+
+.upload-box{border:2px dashed var(--border);border-radius:10px;padding:18px;text-align:center;background:#fbfcfd;cursor:pointer;}
+.upload-box:hover{border-color:var(--teal);}
+.upload-box input{display:none;}
+.doc-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:#fbfcfd;}
+.doc-row .name{font-size:13px;font-weight:600;}
+.doc-row .meta{font-size:11.5px;color:var(--text-gray);}
+
+.slider-row{display:flex;align-items:center;gap:14px;}
+.slider-row input[type=range]{flex:1;}
+.slider-val{min-width:120px;text-align:right;font-weight:700;color:var(--navy);}
+
+footer.app-footer{margin-left:250px;text-align:center;padding:18px;color:var(--text-gray);font-size:12px;}
+
+@media(max-width:880px){
+  .sidebar{transform:translateX(-100%);transition:.2s;box-shadow:0 0 30px rgba(0,0,0,.2);}
+  .sidebar.open{transform:translateX(0);}
+  .main,footer.app-footer{margin-left:0;padding:20px 16px 50px;}
+  .hamburger{display:block;}
+  .topbar-search{display:none;}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
+  .auth-side{display:none;}
+  .two-col{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== AUTH SCREEN ===================== -->
+<div id="authScreen">
+  <div class="auth-wrap">
+    <div class="auth-side">
+      <h1>🏠 HLMS</h1>
+      <p>Housing Loan Management System — this build covers Loan Guidance, Post-Disbursement Services and the full Bank Office console.</p>
+      <ul>
+        <li>Explore &amp; compare housing loan products</li>
+        <li>Manage your loan after disbursement</li>
+        <li>Bank Office: applications, disbursement, NPA &amp; auction workflow</li>
+        <li>Real-time in-app notifications</li>
+      </ul>
+    </div>
+    <div class="auth-form" id="authFormArea"><!-- injected --></div>
+  </div>
+</div>
+
+<!-- ===================== APP SHELL ===================== -->
+<div id="app" class="hidden">
+  <div class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="brand">
+      <div class="logo">🏠</div>
+      <div>
+        <div class="title">HLMS</div>
+        <div class="subtitle">Housing Loan Management System</div>
+      </div>
+    </div>
+    <div class="topbar-search"><input id="globalSearch" placeholder="Search anything..." oninput="handleGlobalSearch(this.value)"></div>
+    <div class="topbar-right">
+      <button class="icon-btn" title="Notifications" onclick="openNotifPanel()">🔔<span class="icon-dot" id="notifCount">0</span></button>
+      <div class="user-chip" onclick="goMyProfile()">
+        <div class="user-avatar" id="userInitials">JD</div>
+        <div class="user-name" id="userNameTop">User</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar" id="sidebar"><!-- injected by renderSidebar() based on role --></div>
+
+  <div class="main" id="main"><!-- view content injected here --></div>
+  <footer class="app-footer">HLMS — Loan Guidance · Post Disbursement · Bank Office module. Demo build, all data stored locally in your browser (no server / no backend).</footer>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ======================================================================
+   HLMS — LOAN GUIDANCE + POST DISBURSEMENT + BANK OFFICE MODULE
+   Pure HTML/CSS/JS, no backend. All persistence via localStorage.
+   ====================================================================== */
+
+/* ---------------------------- DB LAYER ---------------------------- */
+const DB_KEY = 'hlms_bopd_lg_v1';
+function loadDB(){
+  let raw = localStorage.getItem(DB_KEY);
+  if(!raw){
+    const fresh = { users:{}, session:null, applications:[], notifications:[], serviceRequests:[], bids:[], legalNotices:[], nextTrack:1001, nextReq:5001, nextNotice:1 };
+    localStorage.setItem(DB_KEY, JSON.stringify(fresh));
+    return fresh;
+  }
+  return JSON.parse(raw);
+}
+function saveDB(){ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }
+let DB = loadDB();
+
+/* ---------------------------- ROLES ---------------------------- */
+const ROLE_LABELS = { customer:'Customer', bankoffice:'Bank Office' };
+function isBankOffice(){ const u = currentUser(); return !!u && u.role==='bankoffice'; }
+function goMyProfile(){ go(isBankOffice() ? 'bosettings' : 'profile'); }
+
+/* ---------------------------- APPLICATION / LEGAL-STYLE HELPERS ---------------------------- */
+const LEGAL_CHECKLIST = [
+  {key:'titleDeed', label:'Title Deed / Ownership Document'},
+  {key:'encumbrance', label:'Encumbrance Certificate (13 yrs)'},
+  {key:'saleDeed', label:'Sale Deed / Agreement to Sell'},
+  {key:'noc', label:'NOC from Society / Builder / Competent Authority'},
+  {key:'valuation', label:'Property Valuation Report'},
+  {key:'taxReceipt', label:'Latest Property Tax Receipt'}
+];
+const DOC_LABELS = {
+  idProof:'Identity Proof (Aadhaar / PAN)', incomeProof:'Income Proof (Salary Slip / ITR)',
+  addressProof:'Address Proof', bankStatement:'Bank Statement (Last 6 months)', propertyDocs:'Property Documents'
+};
+const PD_DOC_TYPES = [
+  'Updated KYC / Identity Document', 'Property Insurance Renewal', 'NOC / Loan Closure Supporting Document',
+  'Address Change Proof', 'Property Tax Receipt', 'Other Supporting Document'
+];
+function ensurePostDisbDocs(app){ if(!app.postDisbDocs) app.postDisbDocs=[]; return app.postDisbDocs; }
+function allPostDisbDocs(){
+  let rows=[];
+  (DB.applications||[]).forEach(a=>{ ensurePostDisbDocs(a).forEach(d=>rows.push(Object.assign({app:a}, d))); });
+  return rows.sort((a,b)=> new Date(b.uploadedAt)-new Date(a.uploadedAt));
+}
+function pendingPostDisbDocsCount(){ return allPostDisbDocs().filter(d=>d.status==='Pending').length; }
+function pdDocBadgeClass(status){ return status==='Verified'?'badge-green':status==='Rejected'?'badge-red':'badge-orange'; }
+function ensureLegal(app){
+  if(!app.legal){
+    app.legal = { decision:null, decisionDate:null, officer:null, remarks:'' };
+    LEGAL_CHECKLIST.forEach(c=>{ app.legal[c.key]='Pending'; });
+  }
+  if(!app.auction){
+    app.auction = { stage:'None', noticeDate:null, noticeDueDate:null, demandAmount:0, possessionDate:null, auctionDate:null, reservePrice:0, notes:[] };
+  }
+  return app;
+}
+function daysBetween(a,b){ return Math.ceil((new Date(a)-new Date(b))/86400000); }
+function getRejectionInfo(app){
+  if(app.status!=='Rejected') return null;
+  if(app.boDecision && app.boDecision.decision==='Rejected'){
+    return { by:'Bank Office', officer:app.boDecision.officer, date:app.boDecision.date, remarks:app.boDecision.remarks||'No additional remarks provided.' };
+  }
+  return { by:'HLMS Bank', officer:'—', date:app.createdAt, remarks:'This application was not approved. Please contact support for details.' };
+}
+function auctionBadgeClass(stage){
+  if(stage==='None') return 'badge-gray';
+  if(stage==='Notice Issued') return 'badge-orange';
+  if(stage==='Possession') return 'badge-red';
+  if(stage==='Auction Scheduled') return 'badge-red';
+  if(stage==='Resolved') return 'badge-green';
+  return 'badge-gray';
+}
+function overdueLegalApplications(){
+  const today = new Date();
+  return DB.applications.filter(a=>a.repayment && a.repayment.schedule).map(a=>{
+    ensureLegal(a);
+    a.repayment.schedule.forEach(s=>{ if(s.status!=='Paid' && new Date(s.dueDate)<today) s.status='Overdue'; });
+    const overdueCount = a.repayment.schedule.filter(s=>s.status==='Overdue').length;
+    return Object.assign({overdueCount}, a);
+  }).filter(a=>a.overdueCount>0);
+}
+
+/* ---------------------------- HELPERS ---------------------------- */
+function $(sel,root){ return (root||document).querySelector(sel); }
+function $all(sel,root){ return Array.from((root||document).querySelectorAll(sel)); }
+function fmtINR(n){ n = Math.round(n||0); return '₹' + n.toLocaleString('en-IN'); }
+function fmtDate(d){ const dt = new Date(d); return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function addDays(date,days){ const d = new Date(date); d.setDate(d.getDate()+days); return d.toISOString(); }
+function uid(prefix){ return prefix+'_'+Math.random().toString(36).slice(2,9); }
+function currentUser(){ return DB.session ? DB.users[DB.session] : null; }
+function toast(title,msg,type){
+  type = type||'info';
+  const el = document.createElement('div');
+  el.className = 'toast '+type;
+  el.innerHTML = '<strong>'+title+'</strong>'+(msg||'');
+  $('#toastWrap').appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='.3s'; setTimeout(()=>el.remove(),300); }, 4200);
+}
+function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* Validation helpers */
+const REGEX = {
+  email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  mobile: /^[6-9]\d{9}$/,
+  pan: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+  aadhaar: /^\d{12}$/,
+  password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=]).{8,}$/
+};
+function fieldError(inputEl, msgEl, msg){
+  inputEl.style.borderColor = 'var(--red)';
+  if(msgEl){ msgEl.textContent = msg; msgEl.classList.remove('hidden'); }
+  return false;
+}
+function fieldOk(inputEl, msgEl){
+  inputEl.style.borderColor = 'var(--border)';
+  if(msgEl){ msgEl.textContent=''; msgEl.classList.add('hidden'); }
+  return true;
+}
+
+/* EMI calculation: standard reducing balance formula */
+function calcEMI(principal, annualRate, years){
+  const r = annualRate/12/100;
+  const n = years*12;
+  if(r===0) return principal/n;
+  const emi = principal*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+  return emi;
+}
+function buildSchedule(principal, annualRate, years, startDate){
+  const r = annualRate/12/100;
+  const n = years*12;
+  const emi = calcEMI(principal, annualRate, years);
+  let balance = principal;
+  const rows=[];
+  for(let i=1;i<=n;i++){
+    const interest = balance*r;
+    let principalPaid = emi-interest;
+    if(i===n){ principalPaid = balance; }
+    balance = Math.max(0, balance-principalPaid);
+    rows.push({
+      no:i,
+      dueDate: addDays(startDate, 30*i),
+      emi: (i===n? principalPaid+interest : emi),
+      principal: principalPaid,
+      interest: interest,
+      balance: balance,
+      status:'Due'
+    });
+  }
+  return rows;
+}
+
+/* Notifications */
+function pushNotification(userEmail, title, body, channels){
+  channels = channels || ['inapp'];
+  DB.notifications.unshift({ id:uid('ntf'), userEmail, title, body, channels, read:false, ts:new Date().toISOString() });
+  saveDB();
+}
+function notifyRoleUsers(role, title, body){
+  Object.values(DB.users).filter(u=>u.role===role && u.active!==false).forEach(u=>{
+    pushNotification(u.email, title, body, notifChannels(u.email));
+  });
+}
+function unreadCount(){
+  const u = currentUser(); if(!u) return 0;
+  return DB.notifications.filter(n=>n.userEmail===u.email && !n.read).length;
+}
+function refreshNotifBadge(){
+  const c = unreadCount();
+  const el = $('#notifCount');
+  if(el){ el.textContent = c; el.style.display = c>0 ? 'inline-block':'none'; }
+}
+function notifChannels(email){
+  const u = DB.users[email]; if(!u) return ['inapp'];
+  const ch=[]; if(u.notifPrefs.inapp) ch.push('inapp'); if(u.notifPrefs.sms) ch.push('sms'); if(u.notifPrefs.email) ch.push('email');
+  return ch.length?ch:['inapp'];
+}
+function renderNotifList(limit){
+  const u = currentUser();
+  const list = DB.notifications.filter(n=>n.userEmail===u.email).slice(0, limit||20);
+  if(!list.length) return '<div class="empty-state"><div class="ic">🔔</div>No notifications yet.</div>';
+  return list.map(n=>`<div class="doc-row" style="align-items:flex-start;${n.read?'':'background:var(--teal-light);'}">
+      <div><div class="name">${escapeHtml(n.title)}</div><div class="meta">${escapeHtml(n.body)}</div></div>
+      <div class="meta" style="white-space:nowrap;">${fmtDate(n.ts)}</div>
+    </div>`).join('');
+}
+function openNotifPanel(){
+  const u = currentUser();
+  DB.notifications.filter(n=>n.userEmail===u.email).forEach(n=>n.read=true);
+  saveDB(); refreshNotifBadge();
+  showModal('🔔 Notifications', renderNotifList(30));
+}
+
+/* ---------------------------- SIDEBAR (role-based) ---------------------------- */
+function sidebarItemsFor(role){
+  if(role==='bankoffice'){
+    return [
+      {view:'bodash', ic:'▦', label:'Dashboard'},
+      {view:'boapplications', ic:'▤', label:'Loan Applications'},
+      {view:'boportfolio', ic:'👥', label:'Customer Portfolio'},
+      {view:'bodisbursement', ic:'💳', label:'Disbursement Queue'},
+      {view:'bonpa', ic:'⚠', label:'Overdue & NPA Tracking'},
+      {view:'bodocs', ic:'▯', label:'Document Verification'},
+      {view:'boauction', ic:'☆', label:'Auction Management'},
+      {view:'boreports', ic:'📊', label:'Reports & Analytics'},
+      {view:'bosettings', ic:'⚙', label:'Settings'}
+    ];
+  }
+  return [
+    {view:'guidance', ic:'◷', label:'Loan Guidance'},
+    {view:'postdisb', ic:'⌂', label:'Post Disbursement'},
+    {view:'profile', ic:'◍', label:'Profile Settings'}
+  ];
+}
+function renderSidebar(){
+  const u = currentUser(); if(!u) return;
+  const items = sidebarItemsFor(u.role);
+  const itemsHtml = items.map(it=>`<button class="nav-item" data-view="${it.view}" onclick="go('${it.view}')"><span class="ic">${it.ic}</span>${it.label}${it.badge?`<span class="nav-badge">${it.badge}</span>`:''}</button>`).join('');
+  $('#sidebar').innerHTML = itemsHtml + `<button class="nav-item" onclick="logout()" style="margin-top:14px;border-top:1px solid var(--border);padding-top:16px;color:var(--red);"><span class="ic" style="color:var(--red);">⏻</span>Log Out</button>`;
+}
+
+/* ---------------------------- ROUTER ---------------------------- */
+const VIEWS_CUSTOMER = ['guidance','postdisb','profile'];
+const VIEWS_BANKOFFICE = ['bodash','boapplications','boappdetail','boportfolio','bodisbursement','bonpa','bodocs','boauction','boreports','bosettings'];
+function currentViews(){ return isBankOffice() ? VIEWS_BANKOFFICE : VIEWS_CUSTOMER; }
+function defaultView(){ return isBankOffice() ? 'bodash' : 'guidance'; }
+function go(view){
+  if(!currentViews().includes(view)) view=defaultView();
+  location.hash = view;
+  renderSidebar();
+  render(view);
+  $all('.nav-item').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo(0,0);
+}
+function toggleSidebar(){ $('#sidebar').classList.toggle('open'); }
+window.addEventListener('hashchange', ()=>{
+  if(!currentUser()) return;
+  const v = location.hash.replace('#','') || defaultView();
+  render(v);
+  $all('.nav-item').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
+});
+
+function render(view){
+  refreshNotifBadge();
+  const main = $('#main');
+  switch(view){
+    case 'dashboard': main.innerHTML = viewDashboard(); break;
+    case 'guidance': main.innerHTML = viewGuidance(); afterGuidance(); break;
+    case 'postdisb': main.innerHTML = viewPostDisb(); break;
+    case 'profile': main.innerHTML = viewProfile(); break;
+    case 'bodash': main.innerHTML = viewBankOfficeDashboard(); break;
+    case 'boapplications': main.innerHTML = viewBankOfficeApplications(); break;
+    case 'boappdetail': main.innerHTML = viewBankOfficeAppDetail(); break;
+    case 'boportfolio': main.innerHTML = viewBankOfficePortfolio(); break;
+    case 'bodisbursement': main.innerHTML = viewBankOfficeDisbursement(); break;
+    case 'bonpa': main.innerHTML = viewBankOfficeNPA(); break;
+    case 'bodocs': main.innerHTML = viewBankOfficeDocuments(); break;
+    case 'boauction': main.innerHTML = viewBankOfficeAuction(); break;
+    case 'boreports': main.innerHTML = viewBankOfficeReports(); break;
+    case 'bosettings': main.innerHTML = viewBankOfficeSettings(); break;
+    default: main.innerHTML = isBankOffice() ? viewBankOfficeDashboard() : viewDashboard();
+  }
+}
+
+/* ================================================================
+   AUTH: Registration, Login+OTP, Forgot Password
+   ================================================================ */
+let authMode = 'login';
+let pendingOtp = null;
+let pendingOtpFor = null;
+let pendingLoginEmail = null;
+
+function renderAuth(){
+  const area = $('#authFormArea');
+  if(authMode==='login') area.innerHTML = tplLogin();
+  else if(authMode==='register') area.innerHTML = tplRegister();
+  else if(authMode==='otp') area.innerHTML = tplOtp('Verify Login', 'Enter the OTP sent to your registered mobile/email to complete login.', 'submitLoginOtp()');
+  else if(authMode==='forgotEmail') area.innerHTML = tplForgotEmail();
+  else if(authMode==='forgotOtp') area.innerHTML = tplOtp('Verify OTP', 'Enter the OTP sent to reset your password.', 'submitForgotOtp()');
+  else if(authMode==='forgotReset') area.innerHTML = tplForgotReset();
+}
+function switchAuth(mode){ authMode = mode; renderAuth(); }
+
+function tplLogin(){
+  return `
+    <h2>Welcome back</h2>
+    <div class="sub">Log in to manage your housing loan.</div>
+    <div class="field">
+      <label>Email or Mobile Number</label>
+      <input id="loginId" placeholder="you@example.com or 9876543210">
+      <div class="error hidden" id="err_loginId"></div>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input id="loginPass" type="password" placeholder="Enter your password">
+      <div class="error hidden" id="err_loginPass"></div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="submitLogin()">Log In</button>
+    <div class="auth-switch"><a href="#" onclick="switchAuth('forgotEmail');return false;">Forgot password?</a></div>
+    <div class="auth-switch">Don't have an account? <a href="#" onclick="switchAuth('register');return false;">Register here</a></div>
+    <div class="demo-note">Demo mode: OTP will be shown on-screen (no real SMS/email is sent since this app has no backend).</div>
+    <div class="demo-note">Bank Office login: <strong>bankoffice@hlms.example.com</strong> / <strong>Bank@123</strong></div>
+    <div class="demo-note">Sample customer login: <strong>priya.sharma@example.com</strong> / <strong>Customer@123</strong></div>
+  `;
+}
+function tplRegister(){
+  return `
+    <h2>Create your account</h2>
+    <div class="sub">Register as a home loan customer to explore loan products and manage your loan.</div>
+    <div class="field"><label>Full Name</label><input id="regName" placeholder="John Doe"><div class="error hidden" id="err_regName"></div></div>
+    <div class="two-col">
+      <div class="field"><label>Mobile Number</label><input id="regMobile" maxlength="10" placeholder="9876543210"><div class="error hidden" id="err_regMobile"></div></div>
+      <div class="field"><label>Email Address</label><input id="regEmail" placeholder="you@example.com"><div class="error hidden" id="err_regEmail"></div></div>
+    </div>
+    <div class="two-col">
+      <div class="field"><label>Identity Document</label>
+        <select id="regIdType"><option value="Aadhaar">Aadhaar</option><option value="PAN">PAN</option></select>
+      </div>
+      <div class="field"><label>ID Number</label><input id="regIdNumber" placeholder="e.g. ABCDE1234F"><div class="error hidden" id="err_regIdNumber"></div></div>
+    </div>
+    <div class="two-col">
+      <div class="field"><label>Password</label><input id="regPass" type="password" placeholder="Min 8 chars"><div class="error hidden" id="err_regPass"></div></div>
+      <div class="field"><label>Confirm Password</label><input id="regPass2" type="password" placeholder="Re-enter password"><div class="error hidden" id="err_regPass2"></div></div>
+    </div>
+    <div class="field hint">Password needs 1 uppercase, 1 lowercase, 1 number, 1 special character, min 8 characters.</div>
+    <button class="btn btn-primary btn-block" onclick="submitRegister()">Create Account</button>
+    <div class="auth-switch">Already registered? <a href="#" onclick="switchAuth('login');return false;">Log in</a></div>
+  `;
+}
+function tplOtp(title, sub, onSubmitFn){
+  return `
+    <h2>${title}</h2>
+    <div class="sub">${sub}</div>
+    <div class="demo-note" id="otpDemoNote"></div>
+    <div class="otp-boxes">
+      ${[0,1,2,3,4,5].map(i=>`<input maxlength="1" inputmode="numeric" class="otpDigit" data-i="${i}" onkeyup="otpKeyMove(this)">`).join('')}
+    </div>
+    <div class="error hidden" id="err_otp" style="text-align:center;"></div>
+    <button class="btn btn-primary btn-block" onclick="${onSubmitFn}">Verify OTP</button>
+    <div class="auth-switch"><a href="#" onclick="resendOtp();return false;">Resend OTP</a></div>
+  `;
+}
+function tplForgotEmail(){
+  return `
+    <h2>Forgot Password</h2>
+    <div class="sub">Enter your registered email or mobile number to receive an OTP.</div>
+    <div class="field"><label>Email or Mobile</label><input id="fpId" placeholder="you@example.com or 9876543210"><div class="error hidden" id="err_fpId"></div></div>
+    <button class="btn btn-primary btn-block" onclick="submitForgotEmail()">Send OTP</button>
+    <div class="auth-switch"><a href="#" onclick="switchAuth('login');return false;">Back to login</a></div>
+  `;
+}
+function tplForgotReset(){
+  return `
+    <h2>Set New Password</h2>
+    <div class="sub">Choose a new secure password for your account.</div>
+    <div class="field"><label>New Password</label><input id="npPass" type="password"><div class="error hidden" id="err_npPass"></div></div>
+    <div class="field"><label>Confirm New Password</label><input id="npPass2" type="password"><div class="error hidden" id="err_npPass2"></div></div>
+    <button class="btn btn-primary btn-block" onclick="submitNewPassword()">Update Password</button>
+  `;
+}
+function otpKeyMove(el){
+  el.value = el.value.replace(/[^0-9]/g,'');
+  if(el.value && el.nextElementSibling && el.nextElementSibling.classList.contains('otpDigit')) el.nextElementSibling.focus();
+}
+function readOtpInput(){ return $all('.otpDigit').map(i=>i.value).join(''); }
+function genOtp(){ return String(Math.floor(100000+Math.random()*900000)); }
+
+function submitLogin(){
+  const idEl=$('#loginId'), passEl=$('#loginPass');
+  let ok=true;
+  const idVal = idEl.value.trim();
+  if(!idVal) ok = fieldError(idEl, $('#err_loginId'), 'Enter your email or mobile number.') && ok;
+  else fieldOk(idEl,$('#err_loginId'));
+  if(!passEl.value) ok = fieldError(passEl, $('#err_loginPass'), 'Enter your password.') && ok;
+  else fieldOk(passEl,$('#err_loginPass'));
+  if(!ok) return;
+
+  const user = Object.values(DB.users).find(u=>u.email===idVal || u.mobile===idVal);
+  if(!user) return fieldError(idEl, $('#err_loginId'), 'No account found with these details.');
+  if(user.active===false) return fieldError(idEl, $('#err_loginId'), 'This account has been deactivated. Contact your administrator.');
+  if(user.password !== passEl.value) return fieldError(passEl, $('#err_loginPass'), 'Incorrect password.');
+
+  pendingLoginEmail = user.email;
+  pendingOtp = genOtp();
+  authMode='otp'; renderAuth();
+  setTimeout(()=>{ $('#otpDemoNote') && ($('#otpDemoNote').textContent = 'Your OTP is '+pendingOtp+' (demo display only).'); $('.otpDigit') && $('.otpDigit').focus(); },0);
+}
+function resendOtp(){
+  pendingOtp = genOtp();
+  toast('OTP Resent', 'A new OTP has been generated.', 'success');
+  const note = $('#otpDemoNote'); if(note) note.textContent = 'Your OTP is '+pendingOtp+' (demo display only).';
+}
+function submitLoginOtp(){
+  const val = readOtpInput();
+  if(val.length!==6) return fieldError({style:{}}, $('#err_otp'), 'Enter all 6 digits.');
+  if(val!==pendingOtp) return fieldError({style:{}}, $('#err_otp'), 'Incorrect OTP. Please try again.');
+  DB.session = pendingLoginEmail; saveDB();
+  pushNotification(pendingLoginEmail,'Login Successful','You logged in to your HLMS account.',['inapp']);
+  enterApp();
+}
+function submitRegister(){
+  const name=$('#regName'), mobile=$('#regMobile'), email=$('#regEmail'), idType=$('#regIdType'), idNumber=$('#regIdNumber'), pass=$('#regPass'), pass2=$('#regPass2');
+  let ok=true;
+  if(!name.value.trim() || name.value.trim().length<3) ok = fieldError(name,$('#err_regName'),'Enter your full name (min 3 characters).') && ok; else fieldOk(name,$('#err_regName'));
+  if(!REGEX.mobile.test(mobile.value.trim())) ok = fieldError(mobile,$('#err_regMobile'),'Enter a valid 10-digit mobile number.') && ok; else fieldOk(mobile,$('#err_regMobile'));
+  if(!REGEX.email.test(email.value.trim())) ok = fieldError(email,$('#err_regEmail'),'Enter a valid email address.') && ok; else fieldOk(email,$('#err_regEmail'));
+  const idVal = idNumber.value.trim().toUpperCase();
+  if(idType.value==='PAN' && !REGEX.pan.test(idVal)) ok = fieldError(idNumber,$('#err_regIdNumber'),'Enter a valid PAN (e.g. ABCDE1234F).') && ok;
+  else if(idType.value==='Aadhaar' && !REGEX.aadhaar.test(idVal)) ok = fieldError(idNumber,$('#err_regIdNumber'),'Enter a valid 12-digit Aadhaar number.') && ok;
+  else fieldOk(idNumber,$('#err_regIdNumber'));
+  if(!REGEX.password.test(pass.value)) ok = fieldError(pass,$('#err_regPass'),'Password must have upper, lower, number & special char (8+ chars).') && ok; else fieldOk(pass,$('#err_regPass'));
+  if(pass.value!==pass2.value || !pass2.value) ok = fieldError(pass2,$('#err_regPass2'),'Passwords do not match.') && ok; else fieldOk(pass2,$('#err_regPass2'));
+  if(Object.values(DB.users).some(u=>u.email===email.value.trim())) ok = fieldError(email,$('#err_regEmail'),'An account already exists with this email.') && ok;
+  if(!ok) return;
+
+  const user = {
+    email: email.value.trim(), name:name.value.trim(), mobile:mobile.value.trim(),
+    idType:idType.value, idNumber:idVal, password:pass.value, role:'customer', active:true,
+    notifPrefs:{sms:true,email:true,inapp:true},
+    employment:{type:'Salaried', employer:'', monthlyIncome:0, otherEMIs:0, cibil:750},
+    createdAt:new Date().toISOString()
+  };
+  DB.users[user.email] = user; saveDB();
+  toast('Account Created', 'Your account has been registered successfully. Please log in.', 'success');
+  switchAuth('login');
+}
+function submitForgotEmail(){
+  const idEl=$('#fpId'); const idVal=idEl.value.trim();
+  const user = Object.values(DB.users).find(u=>u.email===idVal || u.mobile===idVal);
+  if(!user) return fieldError(idEl, $('#err_fpId'), 'No account found with these details.');
+  pendingOtpFor = user.email; pendingOtp = genOtp();
+  authMode='forgotOtp'; renderAuth();
+  setTimeout(()=>{ $('#otpDemoNote').textContent = 'Your OTP is '+pendingOtp+' (demo display only).'; },0);
+}
+function submitForgotOtp(){
+  const val = readOtpInput();
+  if(val.length!==6) return fieldError({style:{}}, $('#err_otp'), 'Enter all 6 digits.');
+  if(val!==pendingOtp) return fieldError({style:{}}, $('#err_otp'), 'Incorrect OTP.');
+  authMode='forgotReset'; renderAuth();
+}
+function submitNewPassword(){
+  const p1=$('#npPass'), p2=$('#npPass2');
+  let ok=true;
+  if(!REGEX.password.test(p1.value)) ok = fieldError(p1,$('#err_npPass'),'Password must have upper, lower, number & special char (8+ chars).') && ok; else fieldOk(p1,$('#err_npPass'));
+  if(p1.value!==p2.value) ok = fieldError(p2,$('#err_npPass2'),'Passwords do not match.') && ok; else fieldOk(p2,$('#err_npPass2'));
+  if(!ok) return;
+  DB.users[pendingOtpFor].password = p1.value; saveDB();
+  toast('Password Updated', 'You can now log in with your new password.', 'success');
+  switchAuth('login');
+}
+
+function enterApp(){
+  $('#authScreen').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  const u = currentUser();
+  $('#userNameTop').textContent = u.name.split(' ')[0];
+  $('#userInitials').textContent = u.name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase();
+  renderSidebar();
+  const v = location.hash.replace('#','') || defaultView();
+  go(v);
+}
+function logout(){
+  // Standalone Customer build: no login screen — logout simply re-enters as the demo customer.
+  DB.session = 'priya.sharma@example.com'; saveDB();
+  location.hash='';
+  enterApp();
+}
+
+/* ================================================================
+   APPLICATION HELPERS (shared)
+   ================================================================ */
+function myApplications(){
+  const u = currentUser(); if(!u) return [];
+  return DB.applications.filter(a=>a.userEmail===u.email).sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+}
+const WORKFLOW_STAGES = ['Application Submitted','Document Verification','Eligibility & Credit Check','Mortgage / Property Verification','Final Approval','Disbursement'];
+const STAGE_OFFSETS = [0,2,5,9,13,16];
+const OFFICERS = [
+  {dept:'Customer Onboarding', officer:'A. Mehta'},
+  {dept:'Document Verification Cell', officer:'S. Iyer'},
+  {dept:'Credit Appraisal Dept', officer:'R. Sharma'},
+  {dept:'Legal & Valuation Team', officer:'N. Kulkarni'},
+  {dept:'Loan Approval Committee', officer:'P. Verma'},
+  {dept:'Disbursement Desk', officer:'K. Das'}
+];
+function buildStages(app){
+  return WORKFLOW_STAGES.map((name,i)=>({
+    name,
+    status: i<app.stageIndex?'completed': i===app.stageIndex?'current':'upcoming',
+    expectedDate: addDays(app.createdAt, STAGE_OFFSETS[i]),
+    officer: OFFICERS[i].officer, department: OFFICERS[i].dept
+  }));
+}
+function advanceStage(appId){
+  const app = DB.applications.find(a=>a.id===appId); if(!app) return;
+  if(app.stageIndex < WORKFLOW_STAGES.length-1){
+    app.stageIndex++;
+    if(app.stageIndex === WORKFLOW_STAGES.length-1){
+      app.status='Disbursed';
+      app.disbursement = {
+        date: new Date().toISOString(), amount: app.loanAmount, refNo:'DISB/'+new Date().getFullYear()+'/'+Math.floor(10000+Math.random()*89999),
+        mode:'NEFT', bank:'HDFC Bank - 1234',
+        insurance:{ property:{status:'Active', validTill: addDays(new Date(),365)}, life:{status:'Active', validTill: addDays(new Date(), 365*20)} }
+      };
+      app.repayment = { schedule: buildSchedule(app.loanAmount, app.interestRate, app.tenureYears, new Date()), outstandingBalance: app.loanAmount };
+      pushNotification(app.userEmail,'Loan Disbursed! 🎉','Your loan amount of '+fmtINR(app.loanAmount)+' has been disbursed.',notifChannels(app.userEmail));
+    } else {
+      app.status='Under Review';
+      pushNotification(app.userEmail,'Application Update', 'Your application '+app.trackingNo+' has moved to: '+WORKFLOW_STAGES[app.stageIndex],notifChannels(app.userEmail));
+    }
+    saveDB();
+    toast('Status Updated', app.trackingNo+' moved to "'+WORKFLOW_STAGES[app.stageIndex]+'"','success');
+    render(location.hash.replace('#','')||'boappdetail');
+  } else {
+    toast('Already Complete','This application has completed the full workflow.');
+  }
+}
+
+/* Loan products (used by Loan Guidance) */
+const LOAN_PRODUCTS = [
+  {id:'HP', name:'Home Purchase Loan', category:'Home Purchase', rate:8.5, maxTenure:30, maxLTV:'90%', desc:'Finance the purchase of a new or resale residential property.'},
+  {id:'HC', name:'Home Construction Loan', category:'Construction', rate:8.75, maxTenure:25, maxLTV:'85%', desc:'Funds disbursed in stages to construct your house on owned land.'},
+  {id:'HR', name:'Home Renovation Loan', category:'Renovation', rate:9.25, maxTenure:15, maxLTV:'80%', desc:'Renovate, repair or extend your existing home.'},
+  {id:'PL', name:'Plot Loan', category:'Plot Loan', rate:9.0, maxTenure:20, maxLTV:'75%', desc:'Purchase a residential plot for future construction.'},
+  {id:'BT', name:'Balance Transfer + Top-up', category:'Balance Transfer', rate:8.4, maxTenure:30, maxLTV:'90%', desc:'Transfer your existing home loan and get an additional top-up amount.'},
+  {id:'NRI', name:'NRI Home Loan', category:'Home Purchase', rate:8.9, maxTenure:20, maxLTV:'80%', desc:'Home loan tailored for Non-Resident Indian customers.'}
+];
+
+/* ================================================================
+   CUSTOMER DASHBOARD
+   ================================================================ */
+function viewDashboard(){
+  const u = currentUser();
+  const apps = myApplications();
+  const active = apps.find(a=>a.status!=='Disbursed' && a.status!=='Rejected');
+  const disbursed = apps.filter(a=>a.status==='Disbursed');
+  return `
+  <div class="page-head"><div><h1>Welcome back, ${escapeHtml(u.name.split(' ')[0])} 👋</h1><p>Here's a quick overview of your housing loan journey.</p></div></div>
+
+  <div class="grid grid-4">
+    <div class="card stat"><div class="lbl">Active Applications</div><div class="val teal">${apps.filter(a=>a.status!=='Disbursed'&&a.status!=='Rejected').length}</div></div>
+    <div class="card stat"><div class="lbl">Disbursed Loans</div><div class="val teal">${disbursed.length}</div></div>
+    <div class="card stat"><div class="lbl">Total Applications</div><div class="val">${apps.length}</div></div>
+    <div class="card stat"><div class="lbl">Unread Notifications</div><div class="val teal">${unreadCount()}</div></div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>📋 Application Snapshot</h3>
+      ${active ? `
+        <div class="stat" style="margin-bottom:10px;"><div class="lbl">Tracking No.</div><div class="val">${active.trackingNo}</div></div>
+        <div class="grid grid-2" style="margin-bottom:14px;">
+          <div class="stat"><div class="lbl">Loan Type</div><div class="val">${active.loanType}</div></div>
+          <div class="stat"><div class="lbl">Amount</div><div class="val">${fmtINR(active.loanAmount)}</div></div>
+          <div class="stat"><div class="lbl">Status</div><div class="val"><span class="badge badge-navy">${active.status}</span></div></div>
+          <div class="stat"><div class="lbl">Current Stage</div><div class="val">${WORKFLOW_STAGES[active.stageIndex]}</div></div>
+        </div>
+        <p style="font-size:12.5px;color:var(--text-gray);margin:0;">Your application is being processed by our Bank Office team. You'll be notified as it progresses.</p>
+      ` : (disbursed.length ? `<div class="empty-state"><div class="ic">✅</div>All your applications have been disbursed.<br><button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="go('postdisb')">Go to Post Disbursement</button></div>`
+        : `<div class="empty-state"><div class="ic">📄</div>No applications yet.</div>`)}
+    </div>
+
+    <div class="card">
+      <h3>✅ Quick Actions</h3>
+      <div class="quick-links">
+        <a href="#" onclick="go('guidance');return false;">Explore Loan Products <span class="arrow">→</span></a>
+        <a href="#" onclick="go('postdisb');return false;">Post Disbursement Services <span class="arrow">→</span></a>
+        <a href="#" onclick="go('profile');return false;">Update Profile Settings <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🔔 Recent Notifications</h3>
+    ${renderNotifList(3)}
+  </div>
+  `;
+}
+
+/* ================================================================
+   LOAN GUIDANCE
+   ================================================================ */
+let guidanceFilter = 'All';
+let compareSelection = [];
+function viewGuidance(){
+  const cats = ['All', ...new Set(LOAN_PRODUCTS.map(p=>p.category))];
+  return `
+  <div class="page-head"><div><h1>Loan Guidance</h1><p>Explore housing loan products, compare options, and plan your EMI.</p></div></div>
+
+  <div class="card">
+    <div class="tabs">${cats.map(c=>`<button class="tab ${guidanceFilter===c?'active':''}" onclick="setGuidanceFilter('${c}')">${c}</button>`).join('')}</div>
+    <div class="grid grid-3" id="productGrid">${renderProductCards()}</div>
+    <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:12.5px;color:var(--text-gray);">Select up to 3 products to compare.</span>
+      <button class="btn btn-teal btn-sm" onclick="openCompare()">Compare Selected (<span id="cmpCount">0</span>)</button>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>⭐ Popular Picks</h3>
+      ${renderRecommendations()}
+    </div>
+    <div class="card">
+      <h3>🧮 EMI &amp; Repayment Guidance</h3>
+      <div class="field"><label>Loan Amount (₹)</label><input type="number" id="gAmount" value="2500000" oninput="updateGuidanceEmi()"></div>
+      <div class="field"><label>Interest Rate (% p.a.)</label><input type="number" id="gRate" value="8.5" step="0.05" oninput="updateGuidanceEmi()"></div>
+      <div class="field"><label>Tenure (Years): <b id="gYearsLbl">20</b></label><input type="range" min="1" max="30" value="20" id="gYears" oninput="updateGuidanceEmi()"></div>
+      <div class="stat" style="margin-top:8px;"><div class="lbl">Estimated Monthly EMI</div><div class="val teal" id="gEmiOut" style="font-size:22px;">₹0</div></div>
+      <p style="font-size:12px;color:var(--text-gray);margin-top:6px;">Longer tenure reduces EMI but increases total interest paid. Choose a repayment plan that keeps your EMI within 40-50% of monthly income.</p>
+    </div>
+  </div>
+  `;
+}
+function renderProductCards(){
+  const list = guidanceFilter==='All'? LOAN_PRODUCTS : LOAN_PRODUCTS.filter(p=>p.category===guidanceFilter);
+  return list.map(p=>{
+    const recommended = p.rate<=8.6;
+    return `<div class="product-card">
+      <span class="tag">${p.category}</span>
+      ${recommended?'<span class="rec">Recommended</span>':''}
+      <h4>${p.name}</h4>
+      <div class="rate">${p.rate}% p.a.</div>
+      <p>${p.desc}</p>
+      <p><b>Max Tenure:</b> ${p.maxTenure} yrs &nbsp; | &nbsp; <b>Max LTV:</b> ${p.maxLTV}</p>
+      <label class="chk-row"><input type="checkbox" onchange="toggleCompare('${p.id}',this)" ${compareSelection.includes(p.id)?'checked':''}> Add to compare</label>
+    </div>`;
+  }).join('');
+}
+function setGuidanceFilter(c){ guidanceFilter=c; $('#productGrid').innerHTML = renderProductCards(); $all('.tab').forEach(t=>t.classList.toggle('active', t.textContent===c)); }
+function toggleCompare(id, el){
+  if(el.checked){
+    if(compareSelection.length>=3){ el.checked=false; return toast('Limit Reached','You can compare up to 3 products only.'); }
+    compareSelection.push(id);
+  } else { compareSelection = compareSelection.filter(x=>x!==id); }
+  $('#cmpCount').textContent = compareSelection.length;
+}
+function openCompare(){
+  if(compareSelection.length<2) return toast('Select More','Please select at least 2 products to compare.');
+  const items = LOAN_PRODUCTS.filter(p=>compareSelection.includes(p.id));
+  const amt = 2500000, years=20;
+  const html = `<table><thead><tr><th>Feature</th>${items.map(p=>`<th>${p.name}</th>`).join('')}</tr></thead><tbody>
+    <tr><td>Interest Rate</td>${items.map(p=>`<td>${p.rate}% p.a.</td>`).join('')}</tr>
+    <tr><td>Max Tenure</td>${items.map(p=>`<td>${p.maxTenure} yrs</td>`).join('')}</tr>
+    <tr><td>Max LTV</td>${items.map(p=>`<td>${p.maxLTV}</td>`).join('')}</tr>
+    <tr><td>EMI on ₹25,00,000 / 20yrs</td>${items.map(p=>`<td>${fmtINR(calcEMI(amt,p.rate,years))}</td>`).join('')}</tr>
+  </tbody></table>`;
+  showModal('🔍 Compare Loan Products', html);
+}
+function renderRecommendations(){
+  const suitable = LOAN_PRODUCTS.slice().sort((a,b)=>a.rate-b.rate).slice(0,3);
+  return suitable.map(p=>`<div class="product-card" style="margin-bottom:10px;">
+      <span class="rec">Lowest Rate</span>
+      <h4>${p.name}</h4><div class="rate">${p.rate}% p.a.</div>
+      <p>${p.desc}</p>
+    </div>`).join('');
+}
+function updateGuidanceEmi(){
+  const amt = Number($('#gAmount').value||0), rate=Number($('#gRate').value||0), yrs=Number($('#gYears').value||1);
+  $('#gYearsLbl').textContent = yrs;
+  $('#gEmiOut').textContent = fmtINR(calcEMI(amt,rate,yrs));
+}
+function afterGuidance(){ updateGuidanceEmi(); $('#cmpCount').textContent = compareSelection.length; }
+
+/* ================================================================
+   POST DISBURSEMENT
+   ================================================================ */
+function viewPostDisb(){
+  const disbursed = myApplications().filter(a=>a.status==='Disbursed');
+  if(!disbursed.length) return `<div class="page-head"><div><h1>Post Disbursement</h1><p>Manage your loan after disbursement and track property &amp; account details.</p></div></div>
+    <div class="card"><div class="empty-state"><div class="ic">🏠</div>No disbursed loans yet. This section unlocks after your loan is disbursed.</div></div>`;
+  if(!window._pdSelected || !disbursed.find(a=>a.id===window._pdSelected)) window._pdSelected = disbursed[0].id;
+  const app = disbursed.find(a=>a.id===window._pdSelected);
+  const disb = app.disbursement;
+  const myReqs = DB.serviceRequests.filter(r=>r.appId===app.id);
+
+  return `
+  <div class="page-head"><div><h1>Post Disbursement</h1><p>Manage your loan after disbursement and track property &amp; account details.</p></div></div>
+  ${disbursed.length>1? `<div class="field" style="max-width:360px;"><label>Select Loan Account</label>
+    <select onchange="window._pdSelected=this.value; render('postdisb')">${disbursed.map(a=>`<option value="${a.id}" ${a.id===app.id?'selected':''}>${a.trackingNo} - ${a.loanType}</option>`).join('')}</select></div>`:''}
+
+  <div class="grid" style="grid-template-columns:2.2fr 1fr;">
+    <div class="card">
+      <div class="grid grid-3">
+        <div class="stat"><div class="lbl">Loan Account No.</div><div class="val">${app.trackingNo}</div></div>
+        <div class="stat"><div class="lbl">Loan Tenure</div><div class="val">${app.tenureYears} Years</div></div>
+        <div class="stat"><div class="lbl">Loan Type</div><div class="val">${app.loanType}</div></div>
+        <div class="stat"><div class="lbl">Interest Rate (p.a.)</div><div class="val">${app.interestRate}%</div></div>
+        <div class="stat"><div class="lbl">Loan Amount</div><div class="val">${fmtINR(app.loanAmount)}</div></div>
+        <div class="stat"><div class="lbl">EMI Amount</div><div class="val">${fmtINR(calcEMI(app.loanAmount, app.interestRate, app.tenureYears))}</div></div>
+        <div class="stat"><div class="lbl">Disbursed Amount</div><div class="val">${fmtINR(disb.amount)}</div></div>
+        <div class="stat"><div class="lbl">Next EMI Due</div><div class="val">${fmtDate((app.repayment.schedule.find(s=>s.status!=='Paid')||{}).dueDate || disb.date)}</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Quick Links</h3>
+      <div class="quick-links">
+        <a href="#" onclick="downloadDisbursementLetter('${app.id}');return false;">Download Disbursement Letter <span class="arrow">→</span></a>
+        <a href="#" onclick="downloadDoc('${app.trackingNo} - Property Documents');return false;">Download Property Documents <span class="arrow">→</span></a>
+        <a href="#" onclick="downloadDoc('${app.trackingNo} - Payment History');return false;">Download Payment History <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>💲 Disbursement Details</h3>
+      <table><tbody>
+        <tr><td>Disbursement Date</td><td style="text-align:right;">${fmtDate(disb.date)}</td></tr>
+        <tr><td>Reference No.</td><td style="text-align:right;">${disb.refNo}</td></tr>
+        <tr><td>Disbursed To</td><td style="text-align:right;">${escapeHtml(app.personal.name)}</td></tr>
+        <tr><td>Disbursement Mode</td><td style="text-align:right;">${disb.mode}</td></tr>
+        <tr><td>Bank</td><td style="text-align:right;">${disb.bank}</td></tr>
+        <tr><td>Purpose</td><td style="text-align:right;">${escapeHtml(app.purpose)}</td></tr>
+      </tbody></table>
+      <div style="margin-top:10px;"><a href="#" onclick="downloadDisbursementLetter('${app.id}')">📄 View Disbursement Letter</a></div>
+    </div>
+    <div class="card">
+      <h3>⌂ Property Details</h3>
+      <table><tbody>
+        <tr><td>Address</td><td style="text-align:right;">${escapeHtml(app.property.address)}</td></tr>
+        <tr><td>Property Type</td><td style="text-align:right;">${app.property.type}</td></tr>
+        <tr><td>Property Value</td><td style="text-align:right;">${fmtINR(app.property.value)}</td></tr>
+        <tr><td>Loan To Value (LTV)</td><td style="text-align:right;">${Math.round(app.loanAmount/app.property.value*100)}%</td></tr>
+        <tr><td>Legal Verification</td><td style="text-align:right;"><span class="badge badge-green">Completed</span></td></tr>
+      </tbody></table>
+      <div style="margin-top:10px;"><a href="#" onclick="downloadDoc('Property Documents - '+'${app.trackingNo}')">📄 View Property Documents</a></div>
+    </div>
+    <div class="card">
+      <h3>○ Insurance Details</h3>
+      <table><tbody>
+        <tr><td>Property Insurance</td><td style="text-align:right;"><span class="badge badge-green">${disb.insurance.property.status}</span></td></tr>
+        <tr><td colspan="2" style="font-size:11px;color:var(--text-gray);">Valid till ${fmtDate(disb.insurance.property.validTill)}</td></tr>
+        <tr><td>Life Insurance</td><td style="text-align:right;"><span class="badge badge-green">${disb.insurance.life.status}</span></td></tr>
+        <tr><td colspan="2" style="font-size:11px;color:var(--text-gray);">Valid till ${fmtDate(disb.insurance.life.validTill)}</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>🛎️ Raise a Service Request</h3>
+      <div class="field"><label>Request Type</label>
+        <select id="pdReqType">
+          <option>NOC / Loan Closure Letter</option><option>Interest Certificate</option>
+          <option>Property Document Retrieval</option><option>Engineer Inspection Request</option>
+          <option>EMI Date Change Request</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Description</label><textarea id="pdReqDesc" rows="3" placeholder="Describe your request..."></textarea><div class="error hidden" id="err_pdReqDesc"></div></div>
+      <button class="btn btn-primary" onclick="submitServiceRequest('${app.id}')">Submit Request</button>
+    </div>
+    <div class="card">
+      <h3>📨 My Service Requests</h3>
+      ${myReqs.length? `<table><thead><tr><th>Ref</th><th>Type</th><th>Status</th></tr></thead><tbody>
+        ${myReqs.map(r=>`<tr><td>${r.ref}</td><td>${escapeHtml(r.type)}</td><td><span class="badge ${r.status==='Completed'?'badge-green':r.status==='In Progress'?'badge-orange':'badge-gray'}">${r.status}</span></td></tr>`).join('')}
+      </tbody></table>
+      ${myReqs.some(r=>r.status!=='Completed')? `<button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="advanceServiceRequest('${myReqs.find(r=>r.status!=='Completed').id}')">🔄 Simulate: Advance Request Status</button>`:''}
+      `:'<div class="empty-state"><div class="ic">📭</div>No service requests yet.</div>'}
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>📤 Upload Document for Verification</h3>
+      <p style="font-size:12.5px;color:var(--text-mid);margin-top:0;">Upload any post-disbursement document (e.g. renewed insurance, updated KYC, address change proof). The Bank Office team will review and verify it.</p>
+      <div class="field"><label>Document Type</label>
+        <select id="pdDocType">${PD_DOC_TYPES.map(t=>`<option>${t}</option>`).join('')}</select>
+      </div>
+      <div class="field"><label>Note (optional)</label><textarea id="pdDocNote" rows="2" placeholder="Add a short note for the reviewer..."></textarea></div>
+      <div class="upload-box" onclick="document.getElementById('pdDocFile').click()">
+        <input type="file" id="pdDocFile" accept=".pdf,.jpg,.jpeg,.png" onchange="handlePostDisbDocUpload('${app.id}', this)">
+        📎 Click to upload file (PDF, JPG, PNG · Max 5MB)
+      </div>
+    </div>
+    <div class="card">
+      <h3>📑 My Uploaded Documents</h3>
+      ${!ensurePostDisbDocs(app).length? `<div class="empty-state"><div class="ic">📭</div>No documents uploaded yet for this loan account.</div>` :
+        `<table><thead><tr><th>Document</th><th>Type</th><th>Status</th><th></th></tr></thead><tbody>
+        ${ensurePostDisbDocs(app).map(d=>`<tr>
+          <td>${escapeHtml(d.name)}<div style="font-size:11px;color:var(--text-gray);">${fmtDate(d.uploadedAt)}</div></td>
+          <td>${escapeHtml(d.type)}</td>
+          <td><span class="badge ${pdDocBadgeClass(d.status)}">${d.status}</span>${d.status==='Rejected'&&d.remarks? `<div style="font-size:11px;color:var(--red);margin-top:3px;">${escapeHtml(d.remarks)}</div>`:''}</td>
+          <td style="text-align:right;"><button class="btn btn-outline btn-sm" onclick="downloadTextFile('Placeholder content for '+'${escapeHtml(d.name)}','${escapeHtml(d.name)}.txt')">View</button></td>
+        </tr>`).join('')}
+        </tbody></table>`}
+    </div>
+  </div>
+  `;
+}
+function handlePostDisbDocUpload(appId, input){
+  const file = input.files[0]; if(!file) return;
+  const okTypes = ['application/pdf','image/jpeg','image/jpg','image/png'];
+  if(!okTypes.includes(file.type)) { toast('Invalid File','Only PDF, JPG, PNG files are allowed.','error'); input.value=''; return; }
+  if(file.size > 5*1024*1024){ toast('File Too Large','Maximum file size is 5MB.','error'); input.value=''; return; }
+  const app = DB.applications.find(a=>a.id===appId); if(!app) return;
+  const type = $('#pdDocType').value;
+  const note = $('#pdDocNote').value.trim();
+  const doc = { id:uid('pdd'), type, name:file.name, size:file.size, note, status:'Pending', uploadedAt:new Date().toISOString(), verifiedBy:null, verifiedAt:null, remarks:'' };
+  ensurePostDisbDocs(app).unshift(doc);
+  saveDB();
+  notifyRoleUsers('bankoffice', 'New Document for Verification', app.personal.name+' ('+app.trackingNo+') uploaded "'+type+'" and needs verification.');
+  toast('Document Uploaded', type+' — pending verification.', 'success');
+  render('postdisb');
+}
+function submitServiceRequest(appId){
+  const desc = $('#pdReqDesc').value.trim();
+  if(!desc) return fieldError($('#pdReqDesc'), $('#err_pdReqDesc'), 'Please describe your request.');
+  fieldOk($('#pdReqDesc'), $('#err_pdReqDesc'));
+  const app = DB.applications.find(a=>a.id===appId);
+  const req = { id:uid('req'), ref:'SR-'+(DB.nextReq++), appId, userEmail:app.userEmail, type:$('#pdReqType').value, desc, status:'Requested', createdAt:new Date().toISOString() };
+  DB.serviceRequests.push(req); saveDB();
+  pushNotification(app.userEmail,'Service Request Submitted', req.ref+' — '+req.type, notifChannels(app.userEmail));
+  toast('Request Submitted', req.ref, 'success');
+  render('postdisb');
+}
+function advanceServiceRequest(id){
+  const req = DB.serviceRequests.find(r=>r.id===id); if(!req) return;
+  const flow = ['Requested','In Review','In Progress','Completed'];
+  const idx = flow.indexOf(req.status);
+  req.status = flow[Math.min(idx+1, flow.length-1)];
+  saveDB();
+  pushNotification(req.userEmail, 'Service Request Update', req.ref+' is now: '+req.status, notifChannels(req.userEmail));
+  toast('Status Updated', req.ref+' → '+req.status, 'success');
+  render('postdisb');
+}
+function downloadDisbursementLetter(appId){
+  const app = DB.applications.find(a=>a.id===appId);
+  const content = `HOUSING LOAN MANAGEMENT SYSTEM\nDISBURSEMENT LETTER\n\nDate: ${fmtDate(app.disbursement.date)}\nReference No: ${app.disbursement.refNo}\n\nDear ${app.personal.name},\n\nWe are pleased to confirm disbursement of your ${app.loanType} as follows:\n\nLoan Account No: ${app.trackingNo}\nLoan Amount: ${fmtINR(app.loanAmount)}\nDisbursed Amount: ${fmtINR(app.disbursement.amount)}\nInterest Rate: ${app.interestRate}% p.a.\nTenure: ${app.tenureYears} years\nEMI: ${fmtINR(calcEMI(app.loanAmount, app.interestRate, app.tenureYears))}\nDisbursement Mode: ${app.disbursement.mode}\nBank: ${app.disbursement.bank}\n\nThis is a system-generated letter for your records.\n\nHLMS`;
+  downloadTextFile(content, app.trackingNo+'_Disbursement_Letter.txt');
+}
+function downloadDoc(name){
+  downloadTextFile('This is a system-generated placeholder document: '+name+'\nGenerated on '+fmtDate(new Date()), name.replace(/\s+/g,'_')+'.txt');
+}
+function downloadTextFile(content, filename){
+  const blob = new Blob([content], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+  toast('Download Started', filename, 'success');
+}
+
+/* ================================================================
+   PROFILE (customer)
+   ================================================================ */
+function viewProfile(){
+  const u = currentUser();
+  const emp = u.employment||{};
+  return `
+  <div class="page-head"><div><h1>Profile Settings</h1><p>Manage your personal, employment and financial information.</p></div></div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>👤 Personal Information</h3>
+      <div class="field"><label>Full Name</label><input id="pfName" value="${escapeHtml(u.name)}"><div class="error hidden" id="err_pfName"></div></div>
+      <div class="two-col">
+        <div class="field"><label>Mobile</label><input id="pfMobile" value="${escapeHtml(u.mobile)}"><div class="error hidden" id="err_pfMobile"></div></div>
+        <div class="field"><label>Email</label><input value="${escapeHtml(u.email)}" disabled></div>
+      </div>
+      <div class="field"><label>${u.idType}</label><input value="${escapeHtml(u.idNumber)}" disabled></div>
+      <button class="btn btn-primary" onclick="savePersonal()">Save Changes</button>
+    </div>
+    <div class="card">
+      <h3>💼 Employment &amp; Financial Information</h3>
+      <div class="two-col">
+        <div class="field"><label>Employment Type</label><select id="pfEmpType"><option ${emp.type==='Salaried'?'selected':''}>Salaried</option><option ${emp.type==='Self-Employed'?'selected':''}>Self-Employed</option></select></div>
+        <div class="field"><label>Employer / Business</label><input id="pfEmployer" value="${escapeHtml(emp.employer||'')}"></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Monthly Income (₹)</label><input type="number" id="pfIncome" value="${emp.monthlyIncome||0}"></div>
+        <div class="field"><label>Other Monthly EMIs (₹)</label><input type="number" id="pfOtherEmi" value="${emp.otherEMIs||0}"></div>
+      </div>
+      <div class="field"><label>CIBIL Score</label><input type="number" id="pfCibil" value="${emp.cibil||750}"><div class="error hidden" id="err_pfCibil"></div></div>
+      <button class="btn btn-primary" onclick="saveEmployment()">Save Changes</button>
+    </div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>🔔 Notification Preferences</h3>
+      <label class="chk-row" style="margin-bottom:10px;"><input type="checkbox" id="npSms" ${u.notifPrefs.sms?'checked':''}> SMS Notifications</label><br>
+      <label class="chk-row" style="margin-bottom:10px;"><input type="checkbox" id="npEmail" ${u.notifPrefs.email?'checked':''}> Email Notifications</label><br>
+      <label class="chk-row" style="margin-bottom:14px;"><input type="checkbox" id="npInapp" ${u.notifPrefs.inapp?'checked':''}> In-App Notifications</label>
+      <button class="btn btn-primary btn-sm" onclick="saveNotifPrefs()">Save Preferences</button>
+    </div>
+    <div class="card">
+      <h3>🔒 Change Password</h3>
+      <div class="field"><label>Current Password</label><input type="password" id="cpCurrent"><div class="error hidden" id="err_cpCurrent"></div></div>
+      <div class="field"><label>New Password</label><input type="password" id="cpNew"><div class="error hidden" id="err_cpNew"></div></div>
+      <div class="field"><label>Confirm New Password</label><input type="password" id="cpNew2"><div class="error hidden" id="err_cpNew2"></div></div>
+      <button class="btn btn-primary btn-sm" onclick="changePasswordProfile()">Update Password</button>
+    </div>
+  </div>
+  `;
+}
+function savePersonal(){
+  const u = currentUser();
+  const nameEl=$('#pfName'), mobileEl=$('#pfMobile');
+  let ok=true;
+  if(!nameEl.value.trim()) ok = fieldError(nameEl,$('#err_pfName'),'Name is required.') && ok; else fieldOk(nameEl,$('#err_pfName'));
+  if(!REGEX.mobile.test(mobileEl.value.trim())) ok = fieldError(mobileEl,$('#err_pfMobile'),'Enter a valid 10-digit mobile number.') && ok; else fieldOk(mobileEl,$('#err_pfMobile'));
+  if(!ok) return;
+  u.name = nameEl.value.trim(); u.mobile = mobileEl.value.trim();
+  saveDB(); $('#userNameTop').textContent = u.name.split(' ')[0];
+  $('#userInitials').textContent = u.name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase();
+  toast('Profile Updated','Your personal information has been saved.','success');
+}
+function saveEmployment(){
+  const u = currentUser();
+  const cibilEl = $('#pfCibil');
+  const cibil = Number(cibilEl.value||0);
+  if(cibil<300||cibil>900) return fieldError(cibilEl, $('#err_pfCibil'), 'CIBIL score must be between 300 and 900.');
+  fieldOk(cibilEl,$('#err_pfCibil'));
+  u.employment = { type:$('#pfEmpType').value, employer:$('#pfEmployer').value.trim(), monthlyIncome:Number($('#pfIncome').value||0), otherEMIs:Number($('#pfOtherEmi').value||0), cibil, desiredAmount:(u.employment||{}).desiredAmount };
+  saveDB();
+  toast('Profile Updated','Your employment and financial details have been saved.','success');
+}
+function saveNotifPrefs(){
+  const u = currentUser();
+  u.notifPrefs = { sms:$('#npSms').checked, email:$('#npEmail').checked, inapp:$('#npInapp').checked };
+  saveDB();
+  toast('Preferences Saved','Your notification channel preferences have been updated.','success');
+}
+function changePasswordProfile(){
+  const u = currentUser();
+  const cur=$('#cpCurrent'), n1=$('#cpNew'), n2=$('#cpNew2');
+  let ok=true;
+  if(cur.value!==u.password) ok = fieldError(cur,$('#err_cpCurrent'),'Current password is incorrect.') && ok; else fieldOk(cur,$('#err_cpCurrent'));
+  if(!REGEX.password.test(n1.value)) ok = fieldError(n1,$('#err_cpNew'),'Password must have upper, lower, number & special char (8+ chars).') && ok; else fieldOk(n1,$('#err_cpNew'));
+  if(n1.value!==n2.value) ok = fieldError(n2,$('#err_cpNew2'),'Passwords do not match.') && ok; else fieldOk(n2,$('#err_cpNew2'));
+  if(!ok) return;
+  u.password = n1.value; saveDB();
+  toast('Password Changed','Your password has been updated successfully.','success');
+  cur.value=n1.value=n2.value='';
+}
+
+/* ================================================================
+   BANK OFFICE PORTAL (role: bankoffice)
+   Dashboard, Loan Applications, Customer Portfolio, Disbursement Queue,
+   Overdue & NPA Tracking, Document Verification, Auction Management,
+   Reports & Analytics, Settings.
+   ================================================================ */
+let boCurrentAppId = null;
+function openBankOfficeApp(appId){ boCurrentAppId = appId; go('boappdetail'); }
+function boIsNPA(overdueCount){ return overdueCount>=3; }
+function usersByRole(role){
+  return Object.values(DB.users).filter(u=>u.role===role).sort((a,b)=>a.name.localeCompare(b.name));
+}
+
+function viewBankOfficeDashboard(){
+  const u = currentUser();
+  const apps = DB.applications||[];
+  const pendingReview = apps.filter(a=>a.status==='Under Review' || a.status==='Submitted').length;
+  const readyToDisburse = apps.filter(a=>a.stageIndex===WORKFLOW_STAGES.length-1 && a.status!=='Disbursed').length;
+  const disbursedThisMonth = apps.filter(a=>a.status==='Disbursed' && a.disbursement && new Date(a.disbursement.date).getMonth()===new Date().getMonth()).length;
+  const overdue = overdueLegalApplications();
+  const npaCount = overdue.filter(a=>boIsNPA(a.overdueCount)).length;
+  const recent = apps.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5);
+  return `
+  <div class="page-head"><div><h1>Welcome, ${escapeHtml(u.name.split(' ')[0])} 👋</h1><p>Branch-level overview of loan applications, disbursements and recovery.</p></div></div>
+  <div class="grid grid-4">
+    <div class="card stat"><div class="lbl">Total Applications</div><div class="val">${apps.length}</div></div>
+    <div class="card stat"><div class="lbl">Pending Review</div><div class="val orange">${pendingReview}</div></div>
+    <div class="card stat"><div class="lbl">Ready to Disburse</div><div class="val teal">${readyToDisburse}</div></div>
+    <div class="card stat"><div class="lbl">Disbursed This Month</div><div class="val teal">${disbursedThisMonth}</div></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card stat"><div class="lbl">Overdue Accounts</div><div class="val orange">${overdue.length}</div><div class="sub">Accounts with missed installments</div></div>
+    <div class="card stat"><div class="lbl">NPA Accounts</div><div class="val red">${npaCount}</div><div class="sub">3+ overdue installments</div></div>
+  </div>
+  <div class="card">
+    <h3>📋 Recent Applications</h3>
+    ${recent.length===0? `<div class="empty-state"><div class="ic">📭</div>No applications yet.</div>` :
+      `<table><thead><tr><th>Tracking No.</th><th>Applicant</th><th>Loan Type</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>
+      ${recent.map(a=>`<tr class="clickable-row" onclick="openBankOfficeApp('${a.id}')">
+        <td>${a.trackingNo}</td><td>${escapeHtml(a.personal.name)}</td><td>${escapeHtml(a.loanType)}</td>
+        <td>${fmtINR(a.loanAmount)}</td><td><span class="badge ${boStatusBadge(a.status)}">${a.status}</span></td>
+        <td style="text-align:right;"><span class="arrow">→</span></td>
+      </tr>`).join('')}</tbody></table>`}
+    <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="go('boapplications')">View All Applications</button>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>✅ Quick Actions</h3>
+      <div class="quick-links">
+        <a href="#" onclick="go('bodisbursement');return false;">Process Disbursement Queue <span class="arrow">→</span></a>
+        <a href="#" onclick="go('bonpa');return false;">Review Overdue &amp; NPA Accounts <span class="arrow">→</span></a>
+        <a href="#" onclick="go('bodocs');return false;">Document Verification <span class="arrow">→</span></a>
+        <a href="#" onclick="go('boreports');return false;">View Reports &amp; Analytics <span class="arrow">→</span></a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>👥 Portfolio Snapshot</h3>
+      ${renderBankOfficePortfolioSnapshot()}
+    </div>
+  </div>
+  `;
+}
+function boStatusBadge(status){
+  if(status==='Disbursed') return 'badge-green';
+  if(status==='Rejected') return 'badge-red';
+  if(status==='Under Review') return 'badge-orange';
+  return 'badge-gray';
+}
+function renderBankOfficePortfolioSnapshot(){
+  const customers = usersByRole('customer');
+  const apps = DB.applications||[];
+  const totalDisbursed = apps.filter(a=>a.status==='Disbursed').reduce((s,a)=>s+(a.disbursement?a.disbursement.amount:0),0);
+  return `<table><tbody>
+    <tr><td>Total Customers</td><td style="text-align:right;">${customers.length}</td></tr>
+    <tr><td>Active Loan Accounts</td><td style="text-align:right;">${apps.filter(a=>a.status==='Disbursed').length}</td></tr>
+    <tr><td>Total Disbursed Amount</td><td style="text-align:right;">${fmtINR(totalDisbursed)}</td></tr>
+  </tbody></table>`;
+}
+
+/* ---- Loan Applications ---- */
+function viewBankOfficeApplications(){
+  const apps = (DB.applications||[]).slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  return `
+  <div class="page-head"><div><h1>Loan Applications</h1><p>All loan applications submitted across the branch.</p></div></div>
+  <div class="card">
+    ${apps.length===0? `<div class="empty-state"><div class="ic">📭</div>No applications yet.</div>` :
+      `<table><thead><tr><th>Tracking No.</th><th>Applicant</th><th>Loan Type</th><th>Amount</th><th>Stage</th><th>Status</th><th></th></tr></thead><tbody>
+      ${apps.map(a=>`<tr class="clickable-row" onclick="openBankOfficeApp('${a.id}')">
+        <td>${a.trackingNo}</td><td>${escapeHtml(a.personal.name)}</td><td>${escapeHtml(a.loanType)}</td>
+        <td>${fmtINR(a.loanAmount)}</td><td>${escapeHtml(WORKFLOW_STAGES[a.stageIndex])}</td>
+        <td><span class="badge ${boStatusBadge(a.status)}">${a.status}</span></td>
+        <td style="text-align:right;"><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openBankOfficeApp('${a.id}')">View</button></td>
+      </tr>`).join('')}</tbody></table>`}
+  </div>
+  `;
+}
+
+/* ---- Application Detail ---- */
+function viewBankOfficeAppDetail(){
+  const app = DB.applications.find(a=>a.id===boCurrentAppId);
+  if(!app) return `<div class="empty-state"><div class="ic">⚠️</div>Application not found.</div><button class="btn btn-outline btn-sm" onclick="go('boapplications')">Back to Applications</button>`;
+  ensureLegal(app);
+  const stages = buildStages(app);
+  const canAdvance = app.status!=='Disbursed' && app.status!=='Rejected';
+  const canReject = app.status!=='Disbursed' && app.status!=='Rejected';
+  return `
+  <div class="back-link" onclick="go('boapplications')">← Back to Loan Applications</div>
+  <div class="page-head">
+    <div><h1>${app.trackingNo}</h1><p>${escapeHtml(app.loanType)} · ${escapeHtml(app.personal.name)}</p></div>
+    <span class="badge ${boStatusBadge(app.status)}">${app.status}</span>
+  </div>
+  ${app.status==='Rejected'? renderRejectionBanner(app) : ''}
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>👤 Applicant &amp; Loan Details</h3>
+      <table><tbody>
+        <tr><td>Applicant Name</td><td style="text-align:right;">${escapeHtml(app.personal.name)}</td></tr>
+        <tr><td>Mobile</td><td style="text-align:right;">${escapeHtml(app.personal.mobile||'—')}</td></tr>
+        <tr><td>Loan Type</td><td style="text-align:right;">${escapeHtml(app.loanType)}</td></tr>
+        <tr><td>Loan Amount</td><td style="text-align:right;">${fmtINR(app.loanAmount)}</td></tr>
+        <tr><td>Interest Rate</td><td style="text-align:right;">${app.interestRate}% p.a.</td></tr>
+        <tr><td>Tenure</td><td style="text-align:right;">${app.tenureYears} years</td></tr>
+        <tr><td>EMI</td><td style="text-align:right;">${fmtINR(calcEMI(app.loanAmount, app.interestRate, app.tenureYears))}</td></tr>
+      </tbody></table>
+    </div>
+    <div class="card">
+      <h3>⌂ Property Details</h3>
+      <table><tbody>
+        <tr><td>Address</td><td style="text-align:right;">${escapeHtml(app.property.address)}</td></tr>
+        <tr><td>Property Type</td><td style="text-align:right;">${escapeHtml(app.property.type)}</td></tr>
+        <tr><td>Declared Value</td><td style="text-align:right;">${fmtINR(app.property.value)}</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <div class="card">
+    <h3>↗ Workflow Progress</h3>
+    <table><thead><tr><th>Stage</th><th>Status</th><th>Officer / Dept.</th></tr></thead><tbody>
+    ${stages.map(s=>`<tr><td>${s.name}</td><td><span class="badge ${s.status==='completed'?'badge-green':s.status==='current'?'badge-orange':'badge-gray'}">${s.status}</span></td><td style="text-align:right;">${s.officer} · ${s.department}</td></tr>`).join('')}
+    </tbody></table>
+    ${canAdvance? `<button class="btn btn-primary btn-sm" style="margin-top:14px;" onclick="advanceStage('${app.id}')">Move to Next Stage</button>` : ''}
+  </div>
+  ${canReject? `
+  <div class="card">
+    <h3>⚖ Bank Office Decision</h3>
+    <p style="font-size:12.5px;color:var(--text-mid);margin:0 0 14px;">As Bank Office, you may reject this application at any stage of review. The applicant will be notified immediately with your reason.</p>
+    <button class="btn btn-danger btn-sm" onclick="openBankOfficeRejectModal('${app.id}')">Reject Application</button>
+  </div>` : ''}
+  `;
+}
+function renderRejectionBanner(app){
+  const info = getRejectionInfo(app);
+  if(!info) return '';
+  return `
+  <div class="card" style="background:var(--red-bg);box-shadow:none;">
+    <h3 style="color:var(--red);">✕ Application Rejected</h3>
+    <table><tbody>
+      <tr><td>Rejected By</td><td style="text-align:right;">${escapeHtml(info.by)}</td></tr>
+      <tr><td>Officer</td><td style="text-align:right;">${escapeHtml(info.officer||'—')}</td></tr>
+      <tr><td>Date</td><td style="text-align:right;">${fmtDate(info.date)}</td></tr>
+    </tbody></table>
+    <div class="field" style="margin-top:10px;"><label>Reason / Remarks</label>
+      <div style="font-size:13px;color:var(--text-mid);background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px;">${escapeHtml(info.remarks)}</div>
+    </div>
+  </div>`;
+}
+function openBankOfficeRejectModal(appId){
+  showModal('Reject Application', `
+    <p style="font-size:12.5px;color:var(--text-mid);">This will mark the application as Rejected and notify the applicant with the reason below.</p>
+    <div class="field"><label>Reason for Rejection</label><textarea id="boRejectRemarks" rows="4" placeholder="e.g. insufficient income, title discrepancy, incomplete documentation..."></textarea><div class="error hidden" id="err_boRejectRemarks"></div></div>
+    <button class="btn btn-danger btn-block" onclick="rejectApplicationByBankOffice('${appId}')">Confirm Rejection</button>
+  `);
+}
+function rejectApplicationByBankOffice(appId){
+  const app = DB.applications.find(a=>a.id===appId); if(!app) return;
+  const remarksEl = $('#boRejectRemarks');
+  const remarks = remarksEl.value.trim();
+  if(!remarks){ fieldError(remarksEl, $('#err_boRejectRemarks'), 'Please provide a reason for rejection.'); return; }
+  const s = currentUser();
+  app.status = 'Rejected';
+  app.boDecision = { decision:'Rejected', officer:s.name, date:new Date().toISOString(), remarks };
+  saveDB();
+  pushNotification(app.userEmail, 'Application Rejected', 'Your application '+app.trackingNo+' has been rejected by the Bank Office. Reason: '+remarks, notifChannels(app.userEmail));
+  $('.modal-overlay')?.remove();
+  toast('Application Rejected', app.trackingNo+' — applicant has been notified.', 'success');
+  render('boappdetail');
+}
+
+/* ---- Customer Portfolio ---- */
+function viewBankOfficePortfolio(){
+  const customers = usersByRole('customer');
+  const apps = DB.applications||[];
+  return `
+  <div class="page-head"><div><h1>Customer Portfolio</h1><p>Overview of all registered customers and their loan accounts.</p></div></div>
+  <div class="card">
+    ${customers.length===0? `<div class="empty-state"><div class="ic">👥</div>No customers registered yet.</div>` :
+      `<table><thead><tr><th>Customer</th><th>Email</th><th>Applications</th><th>Active Loans</th><th>Total Disbursed</th></tr></thead><tbody>
+      ${customers.map(c=>{
+        const cApps = apps.filter(a=>a.userEmail===c.email);
+        const active = cApps.filter(a=>a.status==='Disbursed').length;
+        const total = cApps.filter(a=>a.status==='Disbursed').reduce((s,a)=>s+(a.disbursement?a.disbursement.amount:0),0);
+        return `<tr>
+          <td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.email)}</td>
+          <td>${cApps.length}</td><td>${active}</td><td>${fmtINR(total)}</td>
+        </tr>`;
+      }).join('')}</tbody></table>`}
+  </div>
+  `;
+}
+
+/* ---- Disbursement Queue ---- */
+function viewBankOfficeDisbursement(){
+  const apps = DB.applications||[];
+  const ready = apps.filter(a=>a.stageIndex===WORKFLOW_STAGES.length-1 && a.status!=='Disbursed');
+  const disbursed = apps.filter(a=>a.status==='Disbursed').sort((a,b)=>new Date(b.disbursement.date)-new Date(a.disbursement.date));
+  return `
+  <div class="page-head"><div><h1>Disbursement Queue</h1><p>Applications that have cleared final approval and are ready for fund disbursement.</p></div></div>
+  <div class="card">
+    <h3>💳 Ready to Disburse (${ready.length})</h3>
+    ${ready.length===0? `<div class="empty-state"><div class="ic">✅</div>No applications currently awaiting disbursement.<br><span style="font-size:12px;">Move an application to "Final Approval" from its detail page, then advance once more to disburse.</span></div>` :
+      `<table><thead><tr><th>Tracking No.</th><th>Applicant</th><th>Loan Amount</th><th></th></tr></thead><tbody>
+      ${ready.map(a=>`<tr>
+        <td>${a.trackingNo}</td><td>${escapeHtml(a.personal.name)}</td><td>${fmtINR(a.loanAmount)}</td>
+        <td style="text-align:right;"><button class="btn btn-primary btn-sm" onclick="advanceStage('${a.id}')">Disburse Funds</button></td>
+      </tr>`).join('')}</tbody></table>`}
+  </div>
+  <div class="card">
+    <h3>📜 Recently Disbursed</h3>
+    ${disbursed.length===0? `<div class="empty-state"><div class="ic">📭</div>No disbursements recorded yet.</div>` :
+      `<table><thead><tr><th>Tracking No.</th><th>Applicant</th><th>Amount</th><th>Ref No.</th><th>Date</th></tr></thead><tbody>
+      ${disbursed.slice(0,10).map(a=>`<tr>
+        <td>${a.trackingNo}</td><td>${escapeHtml(a.personal.name)}</td><td>${fmtINR(a.disbursement.amount)}</td>
+        <td>${a.disbursement.refNo}</td><td>${fmtDate(a.disbursement.date)}</td>
+      </tr>`).join('')}</tbody></table>`}
+  </div>
+  `;
+}
+
+/* ---- Overdue & NPA Tracking ---- */
+function viewBankOfficeNPA(){
+  const list = overdueLegalApplications();
+  return `
+  <div class="page-head"><div><h1>Overdue &amp; NPA Tracking</h1><p>Monitor loan accounts with missed EMI payments and classify Non-Performing Assets.</p></div></div>
+  <div class="grid grid-2">
+    <div class="card stat"><div class="lbl">Overdue Accounts</div><div class="val orange">${list.length}</div></div>
+    <div class="card stat"><div class="lbl">NPA Accounts (3+ overdue EMIs)</div><div class="val red">${list.filter(a=>boIsNPA(a.overdueCount)).length}</div></div>
+  </div>
+  <div class="card" style="background:var(--purple-bg);box-shadow:none;">
+    <p style="margin:0;font-size:13px;color:var(--text-mid);">You may classify an account as a Non-Performing Asset once it has 3 or more overdue EMI installments (typically 90+ days past due). Classifying an account as NPA issues a demand notice and starts the recovery / auction process.</p>
+  </div>
+  <div class="card">
+    ${list.length===0? `<div class="empty-state"><div class="ic">✅</div>No overdue accounts at this time.</div>` :
+      `<table><thead><tr><th>Tracking No.</th><th>Borrower</th><th>Overdue Installments</th><th>Outstanding Balance</th><th>Classification</th><th>Recovery Stage</th><th></th></tr></thead><tbody>
+      ${list.map(a=>`<tr>
+        <td class="clickable-row" onclick="openBankOfficeApp('${a.id}')">${a.trackingNo}</td><td>${escapeHtml(a.personal.name)}</td><td>${a.overdueCount}</td>
+        <td>${fmtINR(a.repayment.outstandingBalance)}</td>
+        <td><span class="badge ${boIsNPA(a.overdueCount)?'badge-red':'badge-orange'}">${boIsNPA(a.overdueCount)?'NPA':'Overdue'}</span></td>
+        <td><span class="badge ${auctionBadgeClass(a.auction.stage)}">${a.auction.stage}</span></td>
+        <td style="text-align:right;">${boIsNPA(a.overdueCount) && a.auction.stage==='None'? `<button class="btn btn-danger btn-sm" onclick="markAppAsNPA('${a.id}')">Mark as NPA &amp; Start Auction</button>` : (a.auction.stage!=='None'? `<span style="font-size:11.5px;color:var(--text-gray);">Recovery in progress</span>` : '')}</td>
+      </tr>`).join('')}</tbody></table>`}
+  </div>
+  `;
+}
+function markAppAsNPA(appId){
+  const app = DB.applications.find(a=>a.id===appId); if(!app) return;
+  ensureLegal(app);
+  if(app.auction.stage!=='None'){ toast('Already In Recovery','This account is already under recovery proceedings.'); return; }
+  const overdueCount = (app.repayment && app.repayment.schedule) ? app.repayment.schedule.filter(s=>s.status==='Overdue').length : 0;
+  if(!boIsNPA(overdueCount)){ toast('Not Eligible','This account has fewer than 3 overdue installments and cannot be classified as NPA yet.'); return; }
+  if(!confirm(`Classify ${app.trackingNo} (${app.personal.name}) as NPA and start the auction/recovery process? A demand notice will be issued.`)) return;
+  const s = currentUser();
+  app.npa = { marked:true, markedBy:s.name, date:new Date().toISOString(), overdueCount };
+  app.auction.stage = 'Notice Issued';
+  app.auction.noticeDate = new Date().toISOString();
+  app.auction.noticeDueDate = addDays(new Date(), 60);
+  app.auction.demandAmount = app.repayment.outstandingBalance;
+  saveDB();
+  const notice = {
+    id:uid('ntc'), noticeNo:'NPA/'+new Date().getFullYear()+'/'+String(DB.nextNotice++).padStart(5,'0'),
+    appId:app.id, trackingNo:app.trackingNo, borrower:app.personal.name, type:'NPA Classification & Demand Notice — Section 13(2), SARFAESI Act',
+    issueDate:new Date().toISOString(), dueDate:app.auction.noticeDueDate, status:'Active', officer:s.name,
+    content:`HOUSING LOAN MANAGEMENT SYSTEM\nBANK OFFICE\n\nNPA CLASSIFICATION & DEMAND NOTICE UNDER SECTION 13(2) OF THE SARFAESI ACT, 2002\n\nDate: ${fmtDate(new Date())}\nLoan Account No.: ${app.trackingNo}\n\nTo,\n${app.personal.name}\n${app.property.address}\n\nDear Sir/Madam,\n\nYour loan account has been classified as a Non-Performing Asset (NPA) due to non-payment of ${overdueCount} or more EMI installments. You are hereby called upon to repay the outstanding amount of ${fmtINR(app.repayment.outstandingBalance)} within 60 days of this notice, failing which the Bank may exercise its rights under Section 13(4) of the SARFAESI Act, 2002, including taking possession of the secured asset and its sale by e-auction, without further reference to you.\n\nSecured Asset: ${app.property.address}\n\nThis is a system-generated legal notice for demonstration purposes.\n\nFor HLMS Bank\nBank Office\n${s.name}`
+  };
+  DB.legalNotices.unshift(notice); saveDB();
+  pushNotification(app.userEmail, 'Account Classified as NPA', 'Your loan account '+app.trackingNo+' has been classified as a Non-Performing Asset due to '+overdueCount+' overdue installments. A demand notice has been issued — please clear outstanding dues within 60 days.', notifChannels(app.userEmail));
+  toast('Marked as NPA', app.trackingNo+' — demand notice issued.', 'success');
+  render('bonpa');
+}
+
+/* ---- Document Verification ---- */
+function viewBankOfficeDocuments(){
+  const apps = DB.applications||[];
+  const pending = apps.filter(a=>a.stageIndex===1 && a.status==='Under Review');
+  let rows = [];
+  apps.forEach(a=>{
+    Object.entries(a.documents||{}).forEach(([k,v])=>{ if(v) rows.push({appId:a.id, trackingNo:a.trackingNo, applicant:a.personal.name, name:(v.name||DOC_LABELS[k]||k), date:v.uploadedAt||a.createdAt}); });
+  });
+  rows.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const pdDocs = allPostDisbDocs();
+  const pdPending = pdDocs.filter(d=>d.status==='Pending');
+  return `
+  <div class="page-head"><div><h1>Document Verification</h1><p>Verify submitted KYC/loan documents and post-disbursement uploads.</p></div></div>
+  <div class="card">
+    <h3>📤 Post-Disbursement Document Verification ${pdPending.length? `<span class="badge badge-orange" style="margin-left:6px;">${pdPending.length} pending</span>`:''}</h3>
+    <p style="font-size:12.5px;color:var(--text-mid);margin-top:0;">Documents uploaded by customers after loan disbursement, awaiting your verification.</p>
+    ${pdDocs.length===0? `<div class="empty-state"><div class="ic">📭</div>No post-disbursement documents uploaded yet.</div>` :
+      `<table><thead><tr><th>Tracking No.</th><th>Applicant</th><th>Document</th><th>Type</th><th>Uploaded</th><th>Status</th><th></th></tr></thead><tbody>
+      ${pdDocs.map(d=>`<tr>
+        <td>${d.app.trackingNo}</td><td>${escapeHtml(d.app.personal.name)}</td>
+        <td>${escapeHtml(d.name)}${d.note? `<div style="font-size:11px;color:var(--text-gray);">Note: ${escapeHtml(d.note)}</div>`:''}</td>
+        <td>${escapeHtml(d.type)}</td><td>${fmtDate(d.uploadedAt)}</td>
+        <td><span class="badge ${pdDocBadgeClass(d.status)}">${d.status}</span>${d.status==='Rejected'&&d.remarks? `<div style="font-size:11px;color:var(--red);margin-top:3px;">${escapeHtml(d.remarks)}</div>`:''}</td>
+        <td style="text-align:right;white-space:nowrap;">
+          <button class="btn btn-outline btn-sm" onclick="downloadTextFile('Placeholder content for '+'${escapeHtml(d.name)}','${escapeHtml(d.name)}.txt')">View</button>
+          ${d.status==='Pending'? ` <button class="btn btn-primary btn-sm" onclick="verifyPostDisbDoc('${d.app.id}','${d.id}')">Verify</button> <button class="btn btn-danger btn-sm" onclick="openRejectPostDisbDocModal('${d.app.id}','${d.id}')">Reject</button>`:''}
+        </td>
+      </tr>`).join('')}</tbody></table>`}
+  </div>
+  <div class="card">
+    <h3>🕓 Pending Application Document Verification (${pending.length})</h3>
+    ${pending.length===0? `<div class="empty-state"><div class="ic">✅</div>No applications currently awaiting document verification.</div>` :
+      `<table><thead><tr><th>Tracking No.</th><th>Applicant</th><th>Loan Type</th><th></th></tr></thead><tbody>
+      ${pending.map(a=>`<tr>
+        <td>${a.trackingNo}</td><td>${escapeHtml(a.personal.name)}</td><td>${escapeHtml(a.loanType)}</td>
+        <td style="text-align:right;"><button class="btn btn-outline btn-sm" onclick="openBankOfficeApp('${a.id}')">Review Application</button></td>
+      </tr>`).join('')}</tbody></table>`}
+  </div>
+  <div class="card">
+    <h3>📄 All Submitted Application Documents</h3>
+    ${rows.length===0? `<div class="empty-state"><div class="ic">📭</div>No documents available.</div>` :
+      `<table><thead><tr><th>Tracking No.</th><th>Applicant</th><th>Document</th><th>Uploaded</th><th></th></tr></thead><tbody>
+      ${rows.map(r=>`<tr>
+        <td>${r.trackingNo}</td><td>${escapeHtml(r.applicant)}</td><td>${escapeHtml(r.name)}</td><td>${fmtDate(r.date)}</td>
+        <td style="text-align:right;"><button class="btn btn-outline btn-sm" onclick="downloadTextFile('Placeholder content for '+'${escapeHtml(r.name)}','${escapeHtml(r.name)}.txt')">View</button></td>
+      </tr>`).join('')}</tbody></table>`}
+  </div>
+  `;
+}
+function verifyPostDisbDoc(appId, docId){
+  const app = DB.applications.find(a=>a.id===appId); if(!app) return;
+  const doc = ensurePostDisbDocs(app).find(d=>d.id===docId); if(!doc) return;
+  const s = currentUser();
+  doc.status='Verified'; doc.verifiedBy=s.name; doc.verifiedAt=new Date().toISOString(); doc.remarks='';
+  saveDB();
+  pushNotification(app.userEmail, 'Document Verified', 'Your document "'+doc.type+'" ('+doc.name+') has been verified by the Bank Office.', notifChannels(app.userEmail));
+  toast('Document Verified', doc.name, 'success');
+  render('bodocs');
+}
+function openRejectPostDisbDocModal(appId, docId){
+  showModal('Reject Document', `
+    <p style="font-size:12.5px;color:var(--text-mid);">The customer will be notified and asked to re-upload a correct document.</p>
+    <div class="field"><label>Reason for Rejection</label><textarea id="pdDocRejectRemarks" rows="4" placeholder="e.g. Document unclear, expired, does not match records..."></textarea><div class="error hidden" id="err_pdDocRejectRemarks"></div></div>
+    <button class="btn btn-danger btn-block" onclick="rejectPostDisbDoc('${appId}','${docId}')">Confirm Rejection</button>
+  `);
+}
+function rejectPostDisbDoc(appId, docId){
+  const app = DB.applications.find(a=>a.id===appId); if(!app) return;
+  const doc = ensurePostDisbDocs(app).find(d=>d.id===docId); if(!doc) return;
+  const remarksEl = $('#pdDocRejectRemarks');
+  const remarks = remarksEl.value.trim();
+  if(!remarks){ fieldError(remarksEl, $('#err_pdDocRejectRemarks'), 'Please provide a reason for rejection.'); return; }
+  const s = currentUser();
+  doc.status='Rejected'; doc.verifiedBy=s.name; doc.verifiedAt=new Date().toISOString(); doc.remarks=remarks;
+  saveDB();
+  pushNotification(app.userEmail, 'Document Rejected', 'Your document "'+doc.type+'" ('+doc.name+') was rejected by the Bank Office. Reason: '+remarks+'. Please re-upload from Post Disbursement.', notifChannels(app.userEmail));
+  $('.modal-overlay')?.remove();
+  toast('Document Rejected', doc.name, 'success');
+  render('bodocs');
+}
+
+/* ---- Auction Management ---- */
+function viewBankOfficeAuction(){
+  const all = overdueLegalApplications().map(a=>{ ensureLegal(a); return a; });
+  const inRecovery = all.filter(a=>a.auction.stage!=='None');
+  const eligibleForRecovery = all.filter(a=>a.auction.stage==='None' && boIsNPA(a.overdueCount));
+  const live = inRecovery.filter(a=>a.auction.stage==='Auction Scheduled');
+  const totalBids = live.reduce((s,a)=>s+bidsForApp(a.id).length,0);
+  return `
+  <div class="page-head"><div><h1>Auction Management</h1><p>Post loan-defaulter properties for e-auction and track recovery / live bidding.</p></div></div>
+  <div class="grid grid-4">
+    <div class="card stat"><div class="lbl">Defaulters Eligible to List</div><div class="val orange">${eligibleForRecovery.length}</div></div>
+    <div class="card stat"><div class="lbl">In Recovery Pipeline</div><div class="val">${inRecovery.length}</div></div>
+    <div class="card stat"><div class="lbl">Live / Posted for Auction</div><div class="val teal">${live.length}</div></div>
+    <div class="card stat"><div class="lbl">Total Bids Received</div><div class="val green">${totalBids}</div></div>
+  </div>
+  <div class="card" style="background:var(--purple-bg);box-shadow:none;">
+    <p style="margin:0;font-size:13px;color:var(--text-mid);">Move a defaulting account through recovery — record symbolic possession, then post it for e-auction.</p>
+  </div>
+  ${inRecovery.length===0? `<div class="card"><div class="empty-state"><div class="ic">✅</div>No accounts currently under recovery proceedings.<br>Classify overdue accounts as NPA from <a href="#" onclick="go('bonpa');return false;">Overdue &amp; NPA Tracking</a> to begin.</div></div>` :
+    inRecovery.map(a=>renderBankOfficeAuctionCard(a)).join('')}
+  `;
+}
+function renderBankOfficeAuctionCard(app){
+  const st = app.auction;
+  const bids = bidsForApp(app.id);
+  const hb = bids.length ? bids[0] : null;
+  let noticeInfo = '';
+  if(st.stage!=='None' && st.noticeDueDate){
+    const remaining = daysBetween(st.noticeDueDate, new Date());
+    noticeInfo = `<span class="countdown-pill ${remaining<0?'overdue':''}">${remaining<0? (Math.abs(remaining)+' days past notice period') : (remaining+' days remaining in notice period')}</span>`;
+  }
+  return `
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h3 style="margin-bottom:6px;">${app.trackingNo} — ${escapeHtml(app.personal.name)}</h3>
+        <div style="font-size:12.5px;color:var(--text-mid);">${escapeHtml(app.property.address)}</div>
+      </div>
+      <span class="badge ${auctionBadgeClass(st.stage)}">${st.stage}</span>
+    </div>
+    <table style="margin-top:14px;"><tbody>
+      <tr><td>Overdue Installments</td><td style="text-align:right;">${app.overdueCount}</td></tr>
+      <tr><td>Outstanding Balance</td><td style="text-align:right;">${fmtINR(app.repayment.outstandingBalance)}</td></tr>
+      <tr><td>Property Value</td><td style="text-align:right;">${fmtINR(app.property.value)}</td></tr>
+      ${st.noticeDate? `<tr><td>Demand Notice Issued</td><td style="text-align:right;">${fmtDate(st.noticeDate)} ${noticeInfo}</td></tr>`:''}
+      ${st.auctionDate? `<tr><td>Posted for e-Auction</td><td style="text-align:right;">${fmtDate(st.auctionDate)} · Reserve ${fmtINR(st.reservePrice)}</td></tr>`:''}
+      ${st.stage==='Auction Scheduled'? `<tr><td>Bidder Activity</td><td style="text-align:right;">${bids.length} bid(s)${hb? ' · Highest '+fmtINR(hb.amount) : ' · No bids yet'}</td></tr>`:''}
+    </tbody></table>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+      ${st.stage==='Notice Issued'? `<button class="btn btn-danger btn-sm" onclick="takeLegalPossession('${app.id}')">Record Symbolic Possession</button>`:''}
+      ${st.stage==='Possession'? `<button class="btn btn-primary btn-sm" onclick="openLegalAuctionScheduleModal('${app.id}')">📢 Post Property for e-Auction</button>`:''}
+      ${st.stage==='Auction Scheduled'? `<span class="demo-note" style="display:inline-block;">✅ Posted for e-Auction</span>`:''}
+      ${st.stage!=='None' && st.stage!=='Resolved'? `<button class="btn btn-outline btn-sm" onclick="resolveLegalAuction('${app.id}')">Mark Resolved / Withdraw</button>`:''}
+    </div>
+  </div>`;
+}
+function bidsForApp(appId){
+  return (DB.bids||[]).filter(b=>b.appId===appId)
+    .sort((a,b)=> b.amount-a.amount || new Date(a.createdAt)-new Date(b.createdAt));
+}
+function takeLegalPossession(appId){
+  const app = DB.applications.find(a=>a.id===appId); ensureLegal(app);
+  app.auction.stage='Possession'; app.auction.possessionDate=new Date().toISOString();
+  app.auction.notes.push({date:new Date().toISOString(), text:'Symbolic possession of secured asset recorded under Section 13(4).'});
+  saveDB();
+  pushNotification(app.userEmail,'Possession Notice','Symbolic possession of the secured property under loan account '+app.trackingNo+' has been recorded.', notifChannels(app.userEmail));
+  toast('Possession Recorded', app.trackingNo, 'success');
+  render(location.hash.replace('#','') || 'boauction');
+}
+function openLegalAuctionScheduleModal(appId){
+  const app = DB.applications.find(a=>a.id===appId);
+  showModal('Post Property for e-Auction', `
+    <p style="font-size:12.5px;color:var(--text-mid);margin-top:-6px;">This will publish <strong>${escapeHtml(app.property.address)}</strong> for e-auction.</p>
+    <div class="field"><label>Auction Date</label><input type="date" id="mAuctionDate" min="${new Date().toISOString().slice(0,10)}"></div>
+    <div class="field"><label>Reserve Price (₹)</label><input type="number" id="mReservePrice" placeholder="e.g. 4200000" value="${app.property.value?Math.round(app.property.value*0.8):''}"></div>
+    <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="scheduleLegalAuction('${appId}')">Post Auction</button>
+  `);
+}
+function scheduleLegalAuction(appId){
+  const app = DB.applications.find(a=>a.id===appId); ensureLegal(app);
+  const dateVal = $('#mAuctionDate').value, price = Number($('#mReservePrice').value)||0;
+  if(!dateVal || price<=0){ toast('Missing Details','Please provide an auction date and reserve price.'); return; }
+  app.auction.stage='Auction Scheduled';
+  app.auction.auctionDate = new Date(dateVal).toISOString();
+  app.auction.reservePrice = price;
+  saveDB();
+  const s = currentUser();
+  const notice = { id:uid('ntc'), noticeNo:'AUCTION/'+new Date().getFullYear()+'/'+String(DB.nextNotice++).padStart(5,'0'),
+    appId:app.id, trackingNo:app.trackingNo, borrower:app.personal.name, type:'e-Auction Sale Notice',
+    issueDate:new Date().toISOString(), dueDate:app.auction.auctionDate, status:'Active', officer:s.name,
+    content:`HOUSING LOAN MANAGEMENT SYSTEM\nSALE NOTICE FOR e-AUCTION OF SECURED ASSET\n\nLoan Account No.: ${app.trackingNo}\nBorrower: ${app.personal.name}\nProperty: ${app.property.address}\nAuction Date: ${fmtDate(app.auction.auctionDate)}\nReserve Price: ${fmtINR(price)}\n\nThis is a system-generated legal notice for demonstration purposes.` };
+  DB.legalNotices.unshift(notice); saveDB();
+  pushNotification(app.userEmail,'e-Auction Scheduled','An e-auction sale of the secured property under loan account '+app.trackingNo+' has been scheduled for '+fmtDate(app.auction.auctionDate)+'.', notifChannels(app.userEmail));
+  $('.modal-overlay')?.remove();
+  toast('Auction Posted', 'Scheduled for '+fmtDate(app.auction.auctionDate), 'success');
+  render(location.hash.replace('#','') || 'boauction');
+}
+function resolveLegalAuction(appId){
+  const app = DB.applications.find(a=>a.id===appId); ensureLegal(app);
+  app.auction.stage='Resolved';
+  app.auction.notes.push({date:new Date().toISOString(), text:'Recovery proceedings resolved / withdrawn.'});
+  saveDB();
+  pushNotification(app.userEmail,'Recovery Proceedings Resolved','Recovery proceedings on your loan account '+app.trackingNo+' have been resolved.', notifChannels(app.userEmail));
+  toast('Marked Resolved', app.trackingNo, 'success');
+  render(location.hash.replace('#','') || 'boauction');
+}
+
+/* ---- Reports & Analytics ---- */
+function viewBankOfficeReports(){
+  const apps = DB.applications||[];
+  const totalDisbursed = apps.filter(a=>a.status==='Disbursed').reduce((s,a)=>s+(a.disbursement?a.disbursement.amount:0),0);
+  const avgLoan = apps.length? Math.round(apps.reduce((s,a)=>s+a.loanAmount,0)/apps.length) : 0;
+  const byType = {};
+  apps.forEach(a=>{ byType[a.loanType] = (byType[a.loanType]||0)+1; });
+  const byStatus = {};
+  apps.forEach(a=>{ byStatus[a.status] = (byStatus[a.status]||0)+1; });
+  return `
+  <div class="page-head"><div><h1>Reports &amp; Analytics</h1><p>Branch-level lending performance summary.</p></div></div>
+  <div class="grid grid-4">
+    <div class="card stat"><div class="lbl">Total Applications</div><div class="val">${apps.length}</div></div>
+    <div class="card stat"><div class="lbl">Total Disbursed</div><div class="val teal">${fmtINR(totalDisbursed)}</div></div>
+    <div class="card stat"><div class="lbl">Average Loan Amount</div><div class="val">${fmtINR(avgLoan)}</div></div>
+    <div class="card stat"><div class="lbl">Overdue Accounts</div><div class="val orange">${overdueLegalApplications().length}</div></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>📊 Applications by Loan Type</h3>
+      ${Object.keys(byType).length===0? `<div class="empty-state"><div class="ic">📭</div>No data yet.</div>` :
+        `<table><tbody>${Object.entries(byType).map(([k,v])=>`<tr><td>${escapeHtml(k)}</td><td style="text-align:right;">${v}</td></tr>`).join('')}</tbody></table>`}
+    </div>
+    <div class="card">
+      <h3>📊 Applications by Status</h3>
+      ${Object.keys(byStatus).length===0? `<div class="empty-state"><div class="ic">📭</div>No data yet.</div>` :
+        `<table><tbody>${Object.entries(byStatus).map(([k,v])=>`<tr><td>${escapeHtml(k)}</td><td style="text-align:right;">${v}</td></tr>`).join('')}</tbody></table>`}
+    </div>
+  </div>
+  `;
+}
+
+/* ---- Settings ---- */
+function viewBankOfficeSettings(){
+  const s = currentUser();
+  return `
+  <div class="page-head"><div><h1>Settings</h1><p>Your Bank Office account details and preferences.</p></div></div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>👤 Account Details</h3>
+      <div class="field"><label>Full Name</label><input id="pfName" value="${escapeHtml(s.name)}"><div class="error hidden" id="err_pfName"></div></div>
+      <div class="two-col">
+        <div class="field"><label>Mobile</label><input id="pfMobile" value="${escapeHtml(s.mobile||'')}"><div class="error hidden" id="err_pfMobile"></div></div>
+        <div class="field"><label>Email</label><input value="${escapeHtml(s.email)}" disabled></div>
+      </div>
+      <div class="field"><label>Role</label><input value="${ROLE_LABELS[s.role]||s.role}" disabled></div>
+      <button class="btn btn-primary" onclick="savePersonal()">Save Changes</button>
+    </div>
+    <div class="card">
+      <h3>🔒 Change Password</h3>
+      <div class="field"><label>Current Password</label><input type="password" id="cpCurrent"><div class="error hidden" id="err_cpCurrent"></div></div>
+      <div class="field"><label>New Password</label><input type="password" id="cpNew"><div class="error hidden" id="err_cpNew"></div></div>
+      <div class="field"><label>Confirm New Password</label><input type="password" id="cpNew2"><div class="error hidden" id="err_cpNew2"></div></div>
+      <button class="btn btn-primary btn-sm" onclick="changePasswordProfile()">Update Password</button>
+    </div>
+  </div>
+  `;
+}
+
+/* ================================================================
+   GLOBAL SEARCH (simple client-side)
+   ================================================================ */
+const SEARCH_INDEX = [
+  {label:'Dashboard', view:'dashboard'}, {label:'Loan Guidance', view:'guidance'},
+  {label:'Post Disbursement', view:'postdisb'}, {label:'Profile Settings', view:'profile'},
+  {label:'Bank Office Dashboard', view:'bodash'}, {label:'Loan Applications', view:'boapplications'},
+  {label:'Customer Portfolio', view:'boportfolio'}, {label:'Disbursement Queue', view:'bodisbursement'},
+  {label:'Overdue & NPA Tracking', view:'bonpa'}, {label:'Document Verification', view:'bodocs'},
+  {label:'Auction Management', view:'boauction'}, {label:'Reports & Analytics', view:'boreports'},
+  {label:'Bank Office Settings', view:'bosettings'}
+];
+function handleGlobalSearch(val){ /* soft only */ }
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter' && document.activeElement && document.activeElement.id==='globalSearch'){
+    const val = document.activeElement.value.toLowerCase();
+    const hit = SEARCH_INDEX.find(s=>s.label.toLowerCase().includes(val));
+    if(hit) go(hit.view); else toast('No Results','Try: guidance, disbursement, applications, NPA...');
+  }
+});
+
+/* ================================================================
+   MODAL
+   ================================================================ */
+function showModal(title, bodyHtml){
+  const overlay = document.createElement('div');
+  overlay.className='modal-overlay';
+  overlay.innerHTML = `<div class="modal-box"><h3>${title}</h3>${bodyHtml}<div style="text-align:right;margin-top:16px;"><button class="btn btn-outline btn-sm" onclick="this.closest('.modal-overlay').remove()">Close</button></div></div>`;
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+/* ================================================================
+   SEED / DEMO DATA
+   ================================================================ */
+function ensureSeed(){
+  let changed = false;
+  Object.values(DB.users).forEach(u=>{ if(u.active===undefined){ u.active = true; changed = true; } });
+  if(!Object.values(DB.users).some(u=>u.role==='bankoffice')){
+    DB.users['bankoffice@hlms.example.com'] = {
+      email:'bankoffice@hlms.example.com', name:'Rohit Iyer', mobile:'9888811111',
+      idType:'PAN', idNumber:'BANKO0000A', password:'Bank@123', role:'bankoffice', active:true,
+      notifPrefs:{sms:true,email:true,inapp:true},
+      createdAt:new Date().toISOString()
+    };
+    changed = true;
+  }
+  if(!DB.bids){ DB.bids=[]; changed=true; }
+  if(!DB.legalNotices){ DB.legalNotices=[]; changed=true; }
+  if(!DB.nextNotice){ DB.nextNotice=1; changed=true; }
+  if(!DB.serviceRequests){ DB.serviceRequests=[]; changed=true; }
+  if(!DB._seededDemo){
+    seedDemoCustomersAndApplications();
+    DB._seededDemo = true;
+    changed = true;
+  }
+  if(changed) saveDB();
+}
+function seedDemoCustomersAndApplications(){
+  const c1 = {
+    email:'priya.sharma@example.com', name:'Priya Sharma', mobile:'9876500001',
+    idType:'PAN', idNumber:'PRIYA1234S', password:'Customer@123', role:'customer', active:true,
+    notifPrefs:{sms:true,email:true,inapp:true},
+    employment:{type:'Salaried', employer:'Infotech Solutions', monthlyIncome:95000, otherEMIs:5000, cibil:780},
+    createdAt: addDays(new Date(), -260)
+  };
+  const c2 = {
+    email:'karan.verma@example.com', name:'Karan Verma', mobile:'9876500002',
+    idType:'Aadhaar', idNumber:'987654321098', password:'Customer@123', role:'customer', active:true,
+    notifPrefs:{sms:true,email:true,inapp:true},
+    employment:{type:'Self-Employed', employer:'Verma Traders', monthlyIncome:70000, otherEMIs:8000, cibil:640},
+    createdAt: addDays(new Date(), -300)
+  };
+  DB.users[c1.email]=c1; DB.users[c2.email]=c2;
+
+  function mkApp(opts){
+    const app = Object.assign({
+      id: uid('app'),
+      trackingNo: 'APP-'+new Date().getFullYear()+'-'+String(DB.nextTrack++).padStart(5,'0'),
+      documents:{}, postDisbDocs:[]
+    }, opts);
+    ensureLegal(app);
+    DB.applications.push(app);
+    return app;
+  }
+
+  // App 1 — freshly submitted
+  mkApp({
+    userEmail:c1.email, createdAt: addDays(new Date(), -3),
+    loanType:'Home Purchase Loan', loanAmount:2800000, interestRate:8.5, tenureYears:20,
+    purpose:'Purchase of Residential Property',
+    personal:{name:c1.name, mobile:c1.mobile, email:c1.email, address:'Flat 4B, Lotus Apartments, Chennai'},
+    employment:c1.employment,
+    property:{address:'Flat 4B, Lotus Apartments, Anna Nagar, Chennai', type:'Apartment', value:3500000},
+    documents:{ idProof:{name:'priya_aadhaar.pdf', uploadedAt:addDays(new Date(),-3)} },
+    status:'Submitted', stageIndex:0
+  });
+
+  // App 2 — under document verification
+  mkApp({
+    userEmail:c1.email, createdAt: addDays(new Date(), -9),
+    loanType:'Home Renovation Loan', loanAmount:900000, interestRate:9.25, tenureYears:10,
+    purpose:'Kitchen & bathroom renovation',
+    personal:{name:c1.name, mobile:c1.mobile, email:c1.email, address:'Flat 4B, Lotus Apartments, Chennai'},
+    employment:c1.employment,
+    property:{address:'Flat 4B, Lotus Apartments, Anna Nagar, Chennai', type:'Apartment', value:3500000},
+    documents:{ idProof:{name:'priya_pan.pdf', uploadedAt:addDays(new Date(),-9)}, incomeProof:{name:'priya_salary_slip.pdf', uploadedAt:addDays(new Date(),-9)} },
+    status:'Under Review', stageIndex:1
+  });
+
+  // App 3 — at Final Approval, one click from disbursement
+  mkApp({
+    userEmail:c1.email, createdAt: addDays(new Date(), -18),
+    loanType:'Plot Loan', loanAmount:1500000, interestRate:9.0, tenureYears:15,
+    purpose:'Purchase of residential plot',
+    personal:{name:c1.name, mobile:c1.mobile, email:c1.email, address:'Flat 4B, Lotus Apartments, Chennai'},
+    employment:c1.employment,
+    property:{address:'Plot 22, Green Valley Layout, Coimbatore', type:'Plot', value:2000000},
+    documents:{ idProof:{name:'priya_aadhaar.pdf', uploadedAt:addDays(new Date(),-18)}, incomeProof:{name:'priya_itr.pdf', uploadedAt:addDays(new Date(),-18)}, propertyDocs:{name:'plot_sale_deed.pdf', uploadedAt:addDays(new Date(),-15)} },
+    status:'Under Review', stageIndex:4
+  });
+
+  // App 4 — disbursed recently, clean account (Post Disbursement demo)
+  const disb4Date = addDays(new Date(), -20);
+  mkApp({
+    userEmail:c1.email, createdAt: addDays(new Date(), -60),
+    loanType:'Home Purchase Loan', loanAmount:3200000, interestRate:8.5, tenureYears:20,
+    purpose:'Purchase of Residential Property',
+    personal:{name:c1.name, mobile:c1.mobile, email:c1.email, address:'Flat 4B, Lotus Apartments, Chennai'},
+    employment:c1.employment,
+    property:{address:'Villa 12, Palm Meadows, ECR, Chennai', type:'Villa', value:4200000},
+    documents:{ idProof:{name:'priya_aadhaar.pdf', uploadedAt:addDays(new Date(),-60)}, incomeProof:{name:'priya_salary_slip.pdf', uploadedAt:addDays(new Date(),-60)}, propertyDocs:{name:'villa_sale_deed.pdf', uploadedAt:addDays(new Date(),-52)} },
+    status:'Disbursed', stageIndex:5,
+    disbursement:{ date:disb4Date, amount:3200000, refNo:'DISB/'+new Date(disb4Date).getFullYear()+'/48213', mode:'NEFT', bank:'HDFC Bank - 1234',
+      insurance:{ property:{status:'Active', validTill:addDays(disb4Date,365)}, life:{status:'Active', validTill:addDays(disb4Date,365*20)} } },
+    repayment:{ schedule: buildSchedule(3200000, 8.5, 20, disb4Date), outstandingBalance: 3200000 }
+  });
+
+  // App 5 — disbursed long ago, overdue (NPA candidate) — Karan Verma
+  const disb5Date = addDays(new Date(), -230);
+  mkApp({
+    userEmail:c2.email, createdAt: addDays(new Date(), -270),
+    loanType:'Home Purchase Loan', loanAmount:2200000, interestRate:8.9, tenureYears:15,
+    purpose:'Purchase of Residential Property',
+    personal:{name:c2.name, mobile:c2.mobile, email:c2.email, address:'12, Market Street, Coimbatore'},
+    employment:c2.employment,
+    property:{address:'House No. 45, Race Course Road, Coimbatore', type:'Independent House', value:2800000},
+    documents:{ idProof:{name:'karan_aadhaar.pdf', uploadedAt:addDays(new Date(),-270)} },
+    status:'Disbursed', stageIndex:5,
+    disbursement:{ date:disb5Date, amount:2200000, refNo:'DISB/'+new Date(disb5Date).getFullYear()+'/33107', mode:'NEFT', bank:'HDFC Bank - 1234',
+      insurance:{ property:{status:'Active', validTill:addDays(disb5Date,365)}, life:{status:'Active', validTill:addDays(disb5Date,365*20)} } },
+    repayment:{ schedule: buildSchedule(2200000, 8.9, 15, disb5Date), outstandingBalance: 2100000 }
+  });
+
+  // App 6 — disbursed long ago, already in recovery (Possession recorded) — Karan Verma
+  const disb6Date = addDays(new Date(), -280);
+  const app6 = mkApp({
+    userEmail:c2.email, createdAt: addDays(new Date(), -320),
+    loanType:'Home Construction Loan', loanAmount:1800000, interestRate:8.75, tenureYears:12,
+    purpose:'Construction of residential house',
+    personal:{name:c2.name, mobile:c2.mobile, email:c2.email, address:'12, Market Street, Coimbatore'},
+    employment:c2.employment,
+    property:{address:'Survey No. 88, Kovai Pudur, Coimbatore', type:'Independent House', value:2400000},
+    documents:{ idProof:{name:'karan_pan.pdf', uploadedAt:addDays(new Date(),-320)} },
+    status:'Disbursed', stageIndex:5,
+    disbursement:{ date:disb6Date, amount:1800000, refNo:'DISB/'+new Date(disb6Date).getFullYear()+'/29988', mode:'NEFT', bank:'HDFC Bank - 1234',
+      insurance:{ property:{status:'Active', validTill:addDays(disb6Date,365)}, life:{status:'Active', validTill:addDays(disb6Date,365*20)} } },
+    repayment:{ schedule: buildSchedule(1800000, 8.75, 12, disb6Date), outstandingBalance: 1750000 }
+  });
+  app6.npa = { marked:true, markedBy:'Rohit Iyer', date:addDays(new Date(),-40), overdueCount:5 };
+  app6.auction.stage = 'Possession';
+  app6.auction.noticeDate = addDays(new Date(),-40);
+  app6.auction.noticeDueDate = addDays(new Date(),20);
+  app6.auction.demandAmount = 1750000;
+  app6.auction.possessionDate = addDays(new Date(),-10);
+  app6.auction.notes.push({date:addDays(new Date(),-10), text:'Symbolic possession of secured asset recorded under Section 13(4).'});
+
+  saveDB();
+}
+
+/* ================================================================
+   INIT
+   ================================================================ */
+(function init(){
+  ensureSeed();
+  // Standalone Customer build: always sign in as the demo customer, no login screen.
+  DB.session = 'priya.sharma@example.com';
+  saveDB();
+  enterApp();
+})();
+</script>
+</body>
+</html>
