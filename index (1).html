@@ -147,6 +147,12 @@ input,select,textarea{font-family:inherit;}
 .stat .lbl{font-size:11px;font-weight:700;color:var(--text-gray);text-transform:uppercase;letter-spacing:.4px;}
 .stat .val{font-size:16px;font-weight:700;color:var(--text);}
 .stat .val.teal{color:var(--teal);}
+.stat .val.green{color:var(--green);}
+.stat .val.orange{color:var(--orange);}
+.stat .val.red{color:var(--red);}
+.clickable-row{cursor:pointer;}
+.clickable-row:hover{background:#f7f9fc;}
+tr.bid-row-mine td{background:var(--teal-light);font-weight:700;}
 
 .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;}
 .badge-green{background:var(--green-bg);color:var(--green);}
@@ -295,7 +301,7 @@ footer.app-footer{margin-left:250px;text-align:center;padding:18px;color:var(--t
     <div class="topbar-search"><input id="globalSearch" placeholder="Search anything..." oninput="handleGlobalSearch(this.value)"></div>
     <div class="topbar-right">
       <button class="icon-btn" title="Notifications" onclick="openNotifPanel()">🔔<span class="icon-dot" id="notifCount">0</span></button>
-      <div class="user-chip" onclick="go('profile')">
+      <div class="user-chip" onclick="goMyProfile()">
         <div class="user-avatar" id="userInitials">JD</div>
         <div class="user-name" id="userNameTop">User</div>
       </div>
@@ -331,14 +337,15 @@ function saveDB(){ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }
 let DB = loadDB();
 
 /* ---------------------------- ADMIN / STAFF ROLES ---------------------------- */
-const ROLE_LABELS = { admin:'Admin', employee:'Employee', legal:'Legal Team', loanofficer:'Loan Officer', bankoffice:'Bank Office', customer:'Customer' };
+const ROLE_LABELS = { admin:'Admin', employee:'Employee', legal:'Legal Team', loanofficer:'Loan Officer', bankoffice:'Bank Office', customer:'Customer', bidder:'Bidder' };
 const DEFAULT_PERMISSIONS = {
   admin:      { view:true, add:true,  edit:true,  delete:true  },
   employee:   { view:true, add:true,  edit:true,  delete:false },
   legal:      { view:true, add:false, edit:true,  delete:false },
   loanofficer:{ view:true, add:true,  edit:true,  delete:false },
   bankoffice: { view:true, add:true,  edit:true,  delete:false },
-  customer:   { view:true, add:false, edit:false, delete:false }
+  customer:   { view:true, add:false, edit:false, delete:false },
+  bidder:     { view:true, add:true,  edit:false, delete:false }
 };
 function isAdmin(){ const u = currentUser(); return !!u && u.role==='admin'; }
 /* Ensure at least one admin account exists, and older records have an `active` flag. */
@@ -374,10 +381,23 @@ function isAdmin(){ const u = currentUser(); return !!u && u.role==='admin'; }
   if(!DB.legalNotices){ DB.legalNotices = []; changed = true; }
   if(!DB.nextCase){ DB.nextCase = 1; changed = true; }
   if(!DB.nextNotice){ DB.nextNotice = 1; changed = true; }
+  if(!DB.bids){ DB.bids = []; changed = true; }
+  if(!DB.nextBid){ DB.nextBid = 1; changed = true; }
+  if(!Object.values(DB.users).some(u=>u.role==='bidder')){
+    DB.users['bidder@hlms.example.com'] = {
+      email:'bidder@hlms.example.com', name:'Arjun Mehta', mobile:'9888822222',
+      idType:'PAN', idNumber:'BIDDR0000A', password:'Bidder@123', role:'bidder', active:true,
+      notifPrefs:{sms:true,email:true,inapp:true},
+      createdAt:new Date().toISOString()
+    };
+    changed = true;
+  }
   if(changed) saveDB();
 })();
 function isLegal(){ const u = currentUser(); return !!u && u.role==='legal'; }
 function isBankOffice(){ const u = currentUser(); return !!u && u.role==='bankoffice'; }
+function isBidder(){ const u = currentUser(); return !!u && u.role==='bidder'; }
+function goMyProfile(){ go(isBankOffice() ? 'bosettings' : isBidder() ? 'biddersettings' : 'profile'); }
 
 /* ---------------------------- LEGAL & VALUATION HELPERS ---------------------------- */
 const LEGAL_STAGE_INDEX = 3; // 'Mortgage / Property Verification' in WORKFLOW_STAGES
@@ -409,6 +429,16 @@ function decisionBadgeClass(d){
   if(d==='Rejected') return 'badge-red';
   if(d==='Query Raised') return 'badge-orange';
   return 'badge-gray';
+}
+function getRejectionInfo(app){
+  if(app.status!=='Rejected') return null;
+  if(app.legal && app.legal.decision==='Rejected'){
+    return { by:'Legal & Valuation Team', officer:app.legal.officer, date:app.legal.decisionDate, remarks:app.legal.remarks||'No additional remarks provided.' };
+  }
+  if(app.boDecision && app.boDecision.decision==='Rejected'){
+    return { by:'Bank Office', officer:app.boDecision.officer, date:app.boDecision.date, remarks:app.boDecision.remarks||'No additional remarks provided.' };
+  }
+  return { by:'HLMS Bank', officer:'—', date:app.createdAt, remarks:'This application was not approved. Please contact support for details.' };
 }
 function auctionBadgeClass(stage){
   if(stage==='None') return 'badge-gray';
@@ -506,6 +536,11 @@ function pushNotification(userEmail, title, body, channels){
   DB.notifications.unshift({ id:uid('ntf'), userEmail, title, body, channels, read:false, ts:new Date().toISOString() });
   saveDB();
 }
+function notifyRoleUsers(role, title, body){
+  Object.values(DB.users).filter(u=>u.role===role && u.active!==false).forEach(u=>{
+    pushNotification(u.email, title, body, notifChannels(u.email));
+  });
+}
 function unreadCount(){
   const u = currentUser(); if(!u) return 0;
   return DB.notifications.filter(n=>n.userEmail===u.email && !n.read).length;
@@ -554,6 +589,14 @@ function sidebarItemsFor(role){
       {view:'bosettings', ic:'⚙', label:'Settings'}
     ];
   }
+  if(role==='bidder'){
+    return [
+      {view:'bidderdash', ic:'▦', label:'Dashboard'},
+      {view:'bidderlistings', ic:'☆', label:'Auction Listings'},
+      {view:'bidderbids', ic:'💰', label:'My Bids'},
+      {view:'biddersettings', ic:'⚙', label:'Settings'}
+    ];
+  }
   return [
     {view:'dashboard', ic:'▦', label:'Dashboard'},
     {view:'guidance', ic:'◷', label:'Loan Guidance'},
@@ -580,8 +623,9 @@ const VIEWS_CUSTOMER = ['dashboard','guidance','eligibility','apply','tracking',
 const VIEWS_ADMIN = ['admindash','usermgmt','employeemgmt','legalmgmt','loanofficermgmt','bankofficemgmt','roles','profile'];
 const VIEWS_LEGAL = ['legaldash','legalqueue','legalcasedetail','legaldocuments','legalauction','legalnotices','profile'];
 const VIEWS_BANKOFFICE = ['bodash','boapplications','boappdetail','boportfolio','bodisbursement','bonpa','bodocs','boauction','boreports','bosettings'];
-function currentViews(){ return isAdmin() ? VIEWS_ADMIN : isLegal() ? VIEWS_LEGAL : isBankOffice() ? VIEWS_BANKOFFICE : VIEWS_CUSTOMER; }
-function defaultView(){ return isAdmin() ? 'admindash' : isLegal() ? 'legaldash' : isBankOffice() ? 'bodash' : 'dashboard'; }
+const VIEWS_BIDDER = ['bidderdash','bidderlistings','bidderlistingdetail','bidderbids','biddersettings'];
+function currentViews(){ return isAdmin() ? VIEWS_ADMIN : isLegal() ? VIEWS_LEGAL : isBankOffice() ? VIEWS_BANKOFFICE : isBidder() ? VIEWS_BIDDER : VIEWS_CUSTOMER; }
+function defaultView(){ return isAdmin() ? 'admindash' : isLegal() ? 'legaldash' : isBankOffice() ? 'bodash' : isBidder() ? 'bidderdash' : 'dashboard'; }
 function go(view){
   if(!currentViews().includes(view)) view=defaultView();
   location.hash = view;
@@ -637,7 +681,12 @@ function render(view){
     case 'boauction': main.innerHTML = viewBankOfficeAuction(); break;
     case 'boreports': main.innerHTML = viewBankOfficeReports(); break;
     case 'bosettings': main.innerHTML = viewBankOfficeSettings(); break;
-    default: main.innerHTML = isAdmin() ? viewAdminDashboard() : isLegal() ? viewLegalDashboard() : isBankOffice() ? viewBankOfficeDashboard() : viewDashboard(); if(!isAdmin() && !isLegal() && !isBankOffice()) afterDashboard();
+    case 'bidderdash': main.innerHTML = viewBidderDashboard(); break;
+    case 'bidderlistings': main.innerHTML = viewBidderListings(); break;
+    case 'bidderlistingdetail': main.innerHTML = viewBidderListingDetail(); break;
+    case 'bidderbids': main.innerHTML = viewBidderMyBids(); break;
+    case 'biddersettings': main.innerHTML = viewBidderSettings(); break;
+    default: main.innerHTML = isAdmin() ? viewAdminDashboard() : isLegal() ? viewLegalDashboard() : isBankOffice() ? viewBankOfficeDashboard() : isBidder() ? viewBidderDashboard() : viewDashboard(); if(!isAdmin() && !isLegal() && !isBankOffice() && !isBidder()) afterDashboard();
   }
 }
 
@@ -681,12 +730,21 @@ function tplLogin(){
     <div class="demo-note">Admin login: <strong>admin@hlms.example.com</strong> / <strong>Admin@123</strong></div>
     <div class="demo-note">Legal Team login: <strong>legal@hlms.example.com</strong> / <strong>Legal@123</strong></div>
     <div class="demo-note">Bank Office login: <strong>bankoffice@hlms.example.com</strong> / <strong>Bank@123</strong></div>
+    <div class="demo-note">Bidder login: <strong>bidder@hlms.example.com</strong> / <strong>Bidder@123</strong></div>
   `;
 }
 function tplRegister(){
   return `
     <h2>Create your account</h2>
-    <div class="sub">Register to check eligibility and apply for a housing loan.</div>
+    <div class="sub">Register as a home loan customer, or as a bidder to participate in bank e-auctions.</div>
+    <div class="field">
+      <label>Account Type</label>
+      <select id="regRole" onchange="toggleRegRoleHint()">
+        <option value="customer">Home Loan Customer</option>
+        <option value="bidder">Property Bidder</option>
+      </select>
+      <div class="hint" id="regRoleHint">Apply for and manage a housing loan.</div>
+    </div>
     <div class="field"><label>Full Name</label><input id="regName" placeholder="John Doe"><div class="error hidden" id="err_regName"></div></div>
     <div class="two-col">
       <div class="field"><label>Mobile Number</label><input id="regMobile" maxlength="10" placeholder="9876543210"><div class="error hidden" id="err_regMobile"></div></div>
@@ -778,8 +836,15 @@ function submitLoginOtp(){
   pushNotification(pendingLoginEmail,'Login Successful','You logged in to your HLMS account.',['inapp']);
   enterApp();
 }
+function toggleRegRoleHint(){
+  const role = $('#regRole').value;
+  $('#regRoleHint').textContent = role==='bidder'
+    ? 'Browse bank-listed auction properties and place bids on defaulted assets.'
+    : 'Apply for and manage a housing loan.';
+}
 function submitRegister(){
   const name=$('#regName'), mobile=$('#regMobile'), email=$('#regEmail'), idType=$('#regIdType'), idNumber=$('#regIdNumber'), pass=$('#regPass'), pass2=$('#regPass2');
+  const role = ($('#regRole') && $('#regRole').value) || 'customer';
   let ok=true;
   if(!name.value.trim() || name.value.trim().length<3) ok = fieldError(name,$('#err_regName'),'Enter your full name (min 3 characters).') && ok; else fieldOk(name,$('#err_regName'));
   if(!REGEX.mobile.test(mobile.value.trim())) ok = fieldError(mobile,$('#err_regMobile'),'Enter a valid 10-digit mobile number.') && ok; else fieldOk(mobile,$('#err_regMobile'));
@@ -795,13 +860,15 @@ function submitRegister(){
 
   const user = {
     email: email.value.trim(), name:name.value.trim(), mobile:mobile.value.trim(),
-    idType:idType.value, idNumber:idVal, password:pass.value, role:'customer',
-    employment:{type:'Salaried', employer:'', monthlyIncome:0, otherEMIs:0, cibil:750},
+    idType:idType.value, idNumber:idVal, password:pass.value, role:role,
     notifPrefs:{sms:true,email:true,inapp:true},
     createdAt:new Date().toISOString()
   };
+  if(role==='customer'){
+    user.employment = {type:'Salaried', employer:'', monthlyIncome:0, otherEMIs:0, cibil:750};
+  }
   DB.users[user.email] = user; saveDB();
-  toast('Account Created', 'Your account has been registered successfully. Please log in.', 'success');
+  toast('Account Created', role==='bidder' ? 'Your bidder account has been registered successfully. Please log in to browse auction listings.' : 'Your account has been registered successfully. Please log in.', 'success');
   switchAuth('login');
 }
 function submitForgotEmail(){
@@ -1485,6 +1552,8 @@ function viewTracking(){
   ${apps.length>1? `<div class="field" style="max-width:360px;"><label>Select Application</label>
     <select onchange="trackingSelectedId=this.value; render('tracking')">${apps.map(a=>`<option value="${a.id}" ${a.id===app.id?'selected':''}>${a.trackingNo} — ${a.loanType}</option>`).join('')}</select></div>`:''}
 
+  ${app.status==='Rejected'? renderRejectionBanner(app) : ''}
+
   <div class="grid grid-2">
     <div class="card">
       <h3>📍 Application Summary</h3>
@@ -1523,6 +1592,22 @@ function viewTracking(){
   `;
 }
 function afterTracking(){}
+function renderRejectionBanner(app){
+  const info = getRejectionInfo(app);
+  if(!info) return '';
+  return `
+  <div class="card" style="background:var(--red-bg);box-shadow:none;">
+    <h3 style="color:var(--red);">✕ Application Rejected</h3>
+    <table><tbody>
+      <tr><td>Rejected By</td><td style="text-align:right;">${escapeHtml(info.by)}</td></tr>
+      <tr><td>Officer</td><td style="text-align:right;">${escapeHtml(info.officer||'—')}</td></tr>
+      <tr><td>Date</td><td style="text-align:right;">${fmtDate(info.date)}</td></tr>
+    </tbody></table>
+    <div class="field" style="margin-top:10px;"><label>Reason / Remarks</label>
+      <div style="font-size:13px;color:var(--text-mid);background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px;">${escapeHtml(info.remarks)}</div>
+    </div>
+  </div>`;
+}
 
 /* ================================================================
    REPAYMENT (US-LRM-01..04)
@@ -2272,11 +2357,13 @@ function decideLegalCase(appId, decision){
     app.legal.decision='Query Raised'; app.legal.decisionDate=new Date().toISOString(); app.legal.officer=s.name;
     app.status='Under Review';
     pushNotification(app.userEmail,'Additional Information Required','The Legal team has raised a query on your application '+app.trackingNo+'. Please check remarks: '+(app.legal.remarks||'See portal for details.'), notifChannels(app.userEmail));
+    notifyRoleUsers('bankoffice','Legal Query Raised','A discrepancy was found by the Legal Team on application '+app.trackingNo+' ('+escapeHtml(app.personal.name)+'). Remarks: '+(app.legal.remarks||'See case detail.'));
     toast('Query Raised', 'Applicant has been notified.', 'success');
   } else if(decision==='Rejected'){
     app.legal.decision='Rejected'; app.legal.decisionDate=new Date().toISOString(); app.legal.officer=s.name;
     app.status='Rejected';
     pushNotification(app.userEmail,'Application Rejected','Your application '+app.trackingNo+' could not be approved due to legal/title verification issues. Remarks: '+(app.legal.remarks||'Contact support for details.'), notifChannels(app.userEmail));
+    notifyRoleUsers('bankoffice','Application Rejected by Legal Team','Application '+app.trackingNo+' ('+escapeHtml(app.personal.name)+') was rejected by the Legal Team due to a title/document discrepancy. Remarks: '+(app.legal.remarks||'See case detail.'));
     toast('Case Rejected', app.trackingNo+' has been rejected.', 'success');
   }
   saveDB();
@@ -2590,12 +2677,19 @@ function viewBankOfficeAppDetail(){
   ensureLegal(app);
   const stages = buildStages(app);
   const canAdvance = app.status!=='Disbursed' && app.status!=='Rejected' && app.stageIndex!==LEGAL_STAGE_INDEX;
+  const canReject = app.status!=='Disbursed' && app.status!=='Rejected';
   return `
   <div class="back-link" onclick="go('boapplications')">← Back to Loan Applications</div>
   <div class="page-head">
     <div><h1>${app.trackingNo}</h1><p>${escapeHtml(app.loanType)} · ${escapeHtml(app.personal.name)}</p></div>
     <span class="badge ${boStatusBadge(app.status)}">${app.status}</span>
   </div>
+  ${app.status==='Rejected'? renderRejectionBanner(app) : ''}
+  ${app.status!=='Rejected' && app.legal && app.legal.decision==='Query Raised'? `
+  <div class="card" style="background:var(--orange-bg);box-shadow:none;">
+    <h3 style="color:var(--orange);">⚠ Discrepancy Flagged by Legal Team</h3>
+    <p style="margin:0;font-size:13px;color:var(--text-mid);">${escapeHtml(app.legal.remarks||'The Legal Team has raised a query on this application.')}</p>
+  </div>` : ''}
   <div class="grid grid-2">
     <div class="card">
       <h3>👤 Applicant &amp; Loan Details</h3>
@@ -2624,9 +2718,36 @@ function viewBankOfficeAppDetail(){
     ${stages.map(s=>`<tr><td>${s.name}</td><td><span class="badge ${s.status==='completed'?'badge-green':s.status==='current'?'badge-orange':'badge-gray'}">${s.status}</span></td><td style="text-align:right;">${s.officer} · ${s.department}</td></tr>`).join('')}
     </tbody></table>
     ${canAdvance? `<button class="btn btn-primary btn-sm" style="margin-top:14px;" onclick="advanceStage('${app.id}')">Move to Next Stage</button>` :
-      app.stageIndex===LEGAL_STAGE_INDEX? `<p style="font-size:12.5px;color:var(--text-gray);margin-top:12px;">This application is awaiting Legal &amp; Property Verification and can only be advanced by the Legal Team.</p>` : ''}
+      app.stageIndex===LEGAL_STAGE_INDEX && app.status!=='Rejected'? `<p style="font-size:12.5px;color:var(--text-gray);margin-top:12px;">This application is awaiting Legal &amp; Property Verification and can only be advanced by the Legal Team.</p>` : ''}
   </div>
+  ${canReject? `
+  <div class="card">
+    <h3>⚖ Bank Office Decision</h3>
+    <p style="font-size:12.5px;color:var(--text-mid);margin:0 0 14px;">As Bank Office, you may reject this application directly — for example, following a discrepancy flagged by the Legal Team, or on your own review. The applicant will be notified immediately with your reason.</p>
+    <button class="btn btn-danger btn-sm" onclick="openBankOfficeRejectModal('${app.id}')">Reject Application</button>
+  </div>` : ''}
   `;
+}
+function openBankOfficeRejectModal(appId){
+  showModal('Reject Application', `
+    <p style="font-size:12.5px;color:var(--text-mid);">This will mark the application as Rejected and notify the applicant with the reason below.</p>
+    <div class="field"><label>Reason for Rejection</label><textarea id="boRejectRemarks" rows="4" placeholder="e.g. Title discrepancy flagged by Legal Team, insufficient income, incomplete documentation..."></textarea><div class="error hidden" id="err_boRejectRemarks"></div></div>
+    <button class="btn btn-danger btn-block" onclick="rejectApplicationByBankOffice('${appId}')">Confirm Rejection</button>
+  `);
+}
+function rejectApplicationByBankOffice(appId){
+  const app = DB.applications.find(a=>a.id===appId); if(!app) return;
+  const remarksEl = $('#boRejectRemarks');
+  const remarks = remarksEl.value.trim();
+  if(!remarks){ fieldError(remarksEl, $('#err_boRejectRemarks'), 'Please provide a reason for rejection.'); return; }
+  const s = currentUser();
+  app.status = 'Rejected';
+  app.boDecision = { decision:'Rejected', officer:s.name, date:new Date().toISOString(), remarks };
+  saveDB();
+  pushNotification(app.userEmail, 'Application Rejected', 'Your application '+app.trackingNo+' has been rejected by the Bank Office. Reason: '+remarks, notifChannels(app.userEmail));
+  $('.modal-overlay')?.remove();
+  toast('Application Rejected', app.trackingNo+' — applicant has been notified.', 'success');
+  render('boappdetail');
 }
 
 /* ---- Customer Portfolio ---- */
@@ -2683,23 +2804,52 @@ function viewBankOfficeDisbursement(){
 function viewBankOfficeNPA(){
   const list = overdueLegalApplications();
   return `
-  <div class="page-head"><h1>Overdue &amp; NPA Tracking</h1><p>Monitor loan accounts with missed EMI payments and potential Non-Performing Assets.</p></div>
+  <div class="page-head"><h1>Overdue &amp; NPA Tracking</h1><p>Monitor loan accounts with missed EMI payments and classify Non-Performing Assets.</p></div>
   <div class="grid grid-2">
     <div class="card stat"><div class="lbl">Overdue Accounts</div><div class="val orange">${list.length}</div></div>
     <div class="card stat"><div class="lbl">NPA Accounts (3+ overdue EMIs)</div><div class="val red">${list.filter(a=>boIsNPA(a.overdueCount)).length}</div></div>
   </div>
+  <div class="card" style="background:var(--purple-bg);box-shadow:none;">
+    <p style="margin:0;font-size:13px;color:var(--text-mid);">As Bank Office, you may classify an account as a Non-Performing Asset once it has 3 or more overdue EMI installments (typically 90+ days past due). Classifying an account as NPA issues a demand notice and starts the recovery / auction process, which is then carried through by the Legal &amp; Valuation Team.</p>
+  </div>
   <div class="card">
     ${list.length===0? `<div class="empty-state"><div class="ic">✅</div>No overdue accounts at this time.</div>` :
-      `<table><thead><tr><th>Tracking No.</th><th>Borrower</th><th>Overdue Installments</th><th>Outstanding Balance</th><th>Classification</th><th>Recovery Stage</th></tr></thead><tbody>
-      ${list.map(a=>`<tr class="clickable-row" onclick="openBankOfficeApp('${a.id}')">
-        <td>${a.trackingNo}</td><td>${escapeHtml(a.personal.name)}</td><td>${a.overdueCount}</td>
+      `<table><thead><tr><th>Tracking No.</th><th>Borrower</th><th>Overdue Installments</th><th>Outstanding Balance</th><th>Classification</th><th>Recovery Stage</th><th></th></tr></thead><tbody>
+      ${list.map(a=>`<tr>
+        <td class="clickable-row" onclick="openBankOfficeApp('${a.id}')">${a.trackingNo}</td><td>${escapeHtml(a.personal.name)}</td><td>${a.overdueCount}</td>
         <td>${fmtINR(a.repayment.outstandingBalance)}</td>
         <td><span class="badge ${boIsNPA(a.overdueCount)?'badge-red':'badge-orange'}">${boIsNPA(a.overdueCount)?'NPA':'Overdue'}</span></td>
         <td><span class="badge ${auctionBadgeClass(a.auction.stage)}">${a.auction.stage}</span></td>
+        <td style="text-align:right;">${boIsNPA(a.overdueCount) && a.auction.stage==='None'? `<button class="btn btn-danger btn-sm" onclick="markAppAsNPA('${a.id}')">Mark as NPA &amp; Start Auction</button>` : (a.auction.stage!=='None'? `<span style="font-size:11.5px;color:var(--text-gray);">Recovery in progress</span>` : '')}</td>
       </tr>`).join('')}</tbody></table>`}
-    <p style="font-size:11.5px;color:var(--text-gray);margin-top:14px;">Accounts classified as NPA are handed to the Legal &amp; Valuation Team for recovery action under Auction Management.</p>
   </div>
   `;
+}
+function markAppAsNPA(appId){
+  const app = DB.applications.find(a=>a.id===appId); if(!app) return;
+  ensureLegal(app);
+  if(app.auction.stage!=='None'){ toast('Already In Recovery','This account is already under recovery proceedings.'); return; }
+  const overdueCount = (app.repayment && app.repayment.schedule) ? app.repayment.schedule.filter(s=>s.status==='Overdue').length : 0;
+  if(!boIsNPA(overdueCount)){ toast('Not Eligible','This account has fewer than 3 overdue installments and cannot be classified as NPA yet.'); return; }
+  if(!confirm(`Classify ${app.trackingNo} (${app.personal.name}) as NPA and start the auction/recovery process? A demand notice will be issued and the Legal Team will be notified.`)) return;
+  const s = currentUser();
+  app.npa = { marked:true, markedBy:s.name, date:new Date().toISOString(), overdueCount };
+  app.auction.stage = 'Notice Issued';
+  app.auction.noticeDate = new Date().toISOString();
+  app.auction.noticeDueDate = addDays(new Date(), 60);
+  app.auction.demandAmount = app.repayment.outstandingBalance;
+  saveDB();
+  const notice = {
+    id:uid('ntc'), noticeNo:'NPA/'+new Date().getFullYear()+'/'+String(DB.nextNotice++).padStart(5,'0'),
+    appId:app.id, trackingNo:app.trackingNo, borrower:app.personal.name, type:'NPA Classification & Demand Notice — Section 13(2), SARFAESI Act',
+    issueDate:new Date().toISOString(), dueDate:app.auction.noticeDueDate, status:'Active', officer:s.name,
+    content:`HOUSING LOAN MANAGEMENT SYSTEM\nBANK OFFICE\n\nNPA CLASSIFICATION & DEMAND NOTICE UNDER SECTION 13(2) OF THE SARFAESI ACT, 2002\n\nDate: ${fmtDate(new Date())}\nLoan Account No.: ${app.trackingNo}\n\nTo,\n${app.personal.name}\n${app.property.address}\n\nDear Sir/Madam,\n\nYour loan account has been classified as a Non-Performing Asset (NPA) due to non-payment of ${overdueCount} or more EMI installments. You are hereby called upon to repay the outstanding amount of ${fmtINR(app.repayment.outstandingBalance)} within 60 days of this notice, failing which the Bank may exercise its rights under Section 13(4) of the SARFAESI Act, 2002, including taking possession of the secured asset and its sale by e-auction, without further reference to you.\n\nSecured Asset: ${app.property.address}\n\nThis is a system-generated legal notice for demonstration purposes.\n\nFor HLMS Bank\nBank Office\n${s.name}`
+  };
+  DB.legalNotices.unshift(notice); saveDB();
+  pushNotification(app.userEmail, 'Account Classified as NPA', 'Your loan account '+app.trackingNo+' has been classified as a Non-Performing Asset due to '+overdueCount+' overdue installments. A demand notice has been issued — please clear outstanding dues within 60 days.', notifChannels(app.userEmail));
+  notifyRoleUsers('legal', 'Account Classified as NPA by Bank Office', 'Bank Office has classified loan account '+app.trackingNo+' ('+escapeHtml(app.personal.name)+') as NPA and issued a demand notice. Please continue recovery proceedings under Auction & SARFAESI.');
+  toast('Marked as NPA', app.trackingNo+' — demand notice issued and Legal Team notified.', 'success');
+  render('bonpa');
 }
 
 /* ---- Document Verification ---- */
@@ -2788,6 +2938,218 @@ function viewBankOfficeSettings(){
   const s = currentUser();
   return `
   <div class="page-head"><h1>Settings</h1><p>Your Bank Office account details and preferences.</p></div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>👤 Account Details</h3>
+      <div class="field"><label>Full Name</label><input id="pfName" value="${escapeHtml(s.name)}"><div class="error hidden" id="err_pfName"></div></div>
+      <div class="two-col">
+        <div class="field"><label>Mobile</label><input id="pfMobile" value="${escapeHtml(s.mobile||'')}"><div class="error hidden" id="err_pfMobile"></div></div>
+        <div class="field"><label>Email</label><input value="${escapeHtml(s.email)}" disabled></div>
+      </div>
+      <div class="field"><label>Role</label><input value="${ROLE_LABELS[s.role]||s.role}" disabled></div>
+      <button class="btn btn-primary" onclick="savePersonal()">Save Changes</button>
+    </div>
+    <div class="card">
+      <h3>🔒 Change Password</h3>
+      <div class="field"><label>Current Password</label><input type="password" id="cpCurrent"><div class="error hidden" id="err_cpCurrent"></div></div>
+      <div class="field"><label>New Password</label><input type="password" id="cpNew"><div class="error hidden" id="err_cpNew"></div></div>
+      <div class="field"><label>Confirm New Password</label><input type="password" id="cpNew2"><div class="error hidden" id="err_cpNew2"></div></div>
+      <button class="btn btn-primary btn-sm" onclick="changePasswordProfile()">Update Password</button>
+    </div>
+  </div>
+  `;
+}
+
+/* ================================================================
+   BIDDER PORTAL
+   Browse bank-listed auction properties (defaulted assets under
+   SARFAESI e-auction) and place bids.
+   ================================================================ */
+function auctionListings(){
+  return (DB.applications||[]).filter(a=>{ ensureLegal(a); return a.auction.stage==='Auction Scheduled'; })
+    .sort((x,y)=> new Date(x.auction.auctionDate) - new Date(y.auction.auctionDate));
+}
+function isAuctionOpen(app){ return app.auction.auctionDate && new Date(app.auction.auctionDate) > new Date(); }
+function bidsForApp(appId){
+  return (DB.bids||[]).filter(b=>b.appId===appId)
+    .sort((a,b)=> b.amount-a.amount || new Date(a.createdAt)-new Date(b.createdAt));
+}
+function highestBid(appId){ const list = bidsForApp(appId); return list.length ? list[0] : null; }
+function myBids(){
+  const u = currentUser(); if(!u) return [];
+  return (DB.bids||[]).filter(b=>b.bidderId===u.email).sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+}
+function minNextBid(app){
+  const hb = highestBid(app.id);
+  if(!hb) return app.auction.reservePrice;
+  const step = Math.max(5000, Math.round(app.auction.reservePrice*0.01/1000)*1000);
+  return hb.amount + step;
+}
+function bidderDisplayName(bid){
+  const u = currentUser();
+  if(u && bid.bidderId===u.email) return 'You';
+  const parts = (bid.bidderName||'Bidder').trim().split(' ');
+  return parts[0][0] + '*** ' + (parts.length>1 ? parts[parts.length-1][0]+'.' : '');
+}
+
+let bidderCurrentAppId = null;
+function openBidderListing(appId){ bidderCurrentAppId = appId; go('bidderlistingdetail'); }
+
+function viewBidderDashboard(){
+  const u = currentUser();
+  const listings = auctionListings();
+  const open = listings.filter(isAuctionOpen);
+  const mine = myBids();
+  const winning = open.filter(a=>{ const hb = highestBid(a.id); return hb && hb.bidderId===u.email; }).length;
+  const upcoming = open.slice(0,5);
+  return `
+  <div class="page-head"><h1>Welcome, ${escapeHtml(u.name.split(' ')[0])}</h1><p>Browse bank-listed auction properties and track your bids.</p></div>
+  <div class="grid grid-4">
+    <div class="card stat"><div class="lbl">Open Auctions</div><div class="val">${open.length}</div></div>
+    <div class="card stat"><div class="lbl">My Total Bids</div><div class="val teal">${mine.length}</div></div>
+    <div class="card stat"><div class="lbl">Currently Highest On</div><div class="val green">${winning}</div></div>
+    <div class="card stat"><div class="lbl">Listed All-Time</div><div class="val">${listings.length}</div></div>
+  </div>
+  <div class="card">
+    <h3>⏰ Closing Soon</h3>
+    ${upcoming.length===0? `<div class="empty-state"><div class="ic">📭</div>No auctions currently open for bidding. Check back soon.</div>` :
+      `<table><thead><tr><th>Property</th><th>Type</th><th>Reserve Price</th><th>Auction Date</th><th>Current Highest</th><th></th></tr></thead><tbody>
+      ${upcoming.map(a=>{ const hb=highestBid(a.id); return `<tr class="clickable-row" onclick="openBidderListing('${a.id}')">
+        <td>${escapeHtml(a.property.address)}</td><td>${escapeHtml(a.property.type)}</td>
+        <td>${fmtINR(a.auction.reservePrice)}</td><td>${fmtDate(a.auction.auctionDate)}</td>
+        <td>${hb? fmtINR(hb.amount) : '—'}</td>
+        <td style="text-align:right;"><button class="btn btn-teal btn-sm" onclick="event.stopPropagation();openBidderListing('${a.id}')">View &amp; Bid</button></td>
+      </tr>`; }).join('')}
+      </tbody></table>`}
+  </div>
+  <div class="card" style="background:var(--teal-light);box-shadow:none;">
+    <p style="margin:0;font-size:13px;color:var(--text-mid);">Properties appear here once listed by the bank's Legal &amp; Valuation Team for e-auction following SARFAESI recovery proceedings. Review each listing carefully before placing a bid — all bids are binding as per the auction terms &amp; conditions.</p>
+  </div>
+  `;
+}
+
+let bidderListingsTab = 'open';
+function setBidderListingsTab(t){ bidderListingsTab=t; render('bidderlistings'); }
+function viewBidderListings(){
+  const all = auctionListings();
+  const open = all.filter(isAuctionOpen);
+  const closed = all.filter(a=>!isAuctionOpen(a));
+  const list = bidderListingsTab==='open' ? open : closed;
+  return `
+  <div class="page-head"><h1>Auction Listings</h1><p>Properties listed by the bank for e-auction after SARFAESI recovery proceedings.</p></div>
+  <div class="tabs">
+    <button class="tab ${bidderListingsTab==='open'?'active':''}" onclick="setBidderListingsTab('open')">Open for Bidding (${open.length})</button>
+    <button class="tab ${bidderListingsTab==='closed'?'active':''}" onclick="setBidderListingsTab('closed')">Closed (${closed.length})</button>
+  </div>
+  <div class="grid grid-3">
+    ${list.length===0? `<div class="empty-state" style="grid-column:1/-1;"><div class="ic">📭</div>No listings in this category right now.</div>` :
+      list.map(a=>{ const hb=highestBid(a.id); return `
+      <div class="product-card">
+        <span class="tag">${escapeHtml(a.property.type)}</span>
+        <h4>${escapeHtml(a.property.address)}</h4>
+        <div class="rate">${fmtINR(a.auction.reservePrice)}</div>
+        <p>Reserve Price · Auction ${fmtDate(a.auction.auctionDate)}</p>
+        <p>Current Highest: ${hb? fmtINR(hb.amount) : 'No bids yet'} · ${bidsForApp(a.id).length} bid(s)</p>
+        <button class="btn btn-teal btn-sm btn-block" onclick="openBidderListing('${a.id}')">${isAuctionOpen(a)?'View &amp; Bid':'View Details'}</button>
+      </div>`; }).join('')}
+  </div>
+  `;
+}
+
+function viewBidderListingDetail(){
+  const app = (DB.applications||[]).find(a=>a.id===bidderCurrentAppId);
+  if(!app || app.auction.stage!=='Auction Scheduled'){
+    return `<div class="empty-state"><div class="ic">🔍</div>Listing not found or no longer available.<div style="margin-top:14px;"><button class="btn btn-outline btn-sm" onclick="go('bidderlistings')">Back to Listings</button></div></div>`;
+  }
+  const open = isAuctionOpen(app);
+  const bids = bidsForApp(app.id);
+  const hb = bids.length ? bids[0] : null;
+  const u = currentUser();
+  const iAmHighest = hb && hb.bidderId===u.email;
+  const minAmt = minNextBid(app);
+  const daysLeft = Math.ceil((new Date(app.auction.auctionDate) - new Date())/86400000);
+  return `
+  <div class="back-link" onclick="go('bidderlistings')">← Back to Listings</div>
+  <div class="page-head"><h1>${escapeHtml(app.property.type)} Property — ${app.trackingNo}</h1><p>Bank-listed asset under e-auction (SARFAESI proceedings).</p></div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>🏠 Property Details</h3>
+      <table><tbody>
+        <tr><td>Address</td><td style="text-align:right;">${escapeHtml(app.property.address)}</td></tr>
+        <tr><td>Property Type</td><td style="text-align:right;">${escapeHtml(app.property.type)}</td></tr>
+        <tr><td>Declared Value</td><td style="text-align:right;">${fmtINR(app.property.value)}</td></tr>
+        <tr><td>Reserve Price</td><td style="text-align:right;"><strong>${fmtINR(app.auction.reservePrice)}</strong></td></tr>
+        <tr><td>Auction Date</td><td style="text-align:right;">${fmtDate(app.auction.auctionDate)}</td></tr>
+        <tr><td>Status</td><td style="text-align:right;">${open? `<span class="countdown-pill">${daysLeft<=0?'Closing today':daysLeft+' day(s) left'}</span>` : `<span class="badge badge-gray">Bidding Closed</span>`}</td></tr>
+      </tbody></table>
+      <p style="font-size:11.5px;color:var(--text-gray);margin-top:12px;">Borrower identity is withheld from the public listing per bank policy. Loan account reference: ${app.trackingNo}.</p>
+    </div>
+    <div class="card">
+      <h3>💰 Place Your Bid</h3>
+      ${!open? `<div class="empty-state"><div class="ic">🔒</div>Bidding is closed for this property.</div>` : `
+      <div class="field"><label>Current Highest Bid</label><input value="${hb? fmtINR(hb.amount) : 'No bids yet — reserve price applies'}" disabled></div>
+      ${iAmHighest? `<div class="demo-note" style="background:var(--green-bg);border-color:var(--green);color:var(--green);">You currently hold the highest bid on this property.</div>` : ''}
+      <div class="field"><label>Your Bid Amount (min ${fmtINR(minAmt)})</label><input id="bidAmount" type="number" min="${minAmt}" step="1000" placeholder="${minAmt}"><div class="error hidden" id="err_bidAmount"></div></div>
+      <button class="btn btn-primary btn-block" onclick="placeBid()">Place Bid</button>
+      <p style="font-size:11.5px;color:var(--text-gray);margin-top:10px;">By placing a bid you agree this is a binding offer as per the bank's e-auction terms &amp; conditions.</p>
+      `}
+    </div>
+  </div>
+  <div class="card">
+    <h3>📜 Bid History</h3>
+    ${bids.length===0? `<div class="empty-state"><div class="ic">📭</div>No bids placed yet. Be the first to bid.</div>` :
+      `<table><thead><tr><th>Bidder</th><th>Amount</th><th>Time</th></tr></thead><tbody>
+      ${bids.map(b=>`<tr class="${b.bidderId===u.email?'bid-row-mine':''}"><td>${bidderDisplayName(b)}</td><td>${fmtINR(b.amount)}</td><td>${fmtDate(b.createdAt)}</td></tr>`).join('')}
+      </tbody></table>`}
+  </div>
+  `;
+}
+function placeBid(){
+  const app = (DB.applications||[]).find(a=>a.id===bidderCurrentAppId);
+  if(!app) return;
+  if(!isAuctionOpen(app)){ toast('Auction Closed','This auction is no longer accepting bids.'); return; }
+  const inp = $('#bidAmount');
+  const amt = Number(inp.value||0);
+  const minAmt = minNextBid(app);
+  if(!amt || amt < minAmt){ fieldError(inp, $('#err_bidAmount'), `Bid must be at least ${fmtINR(minAmt)}.`); return; }
+  fieldOk(inp, $('#err_bidAmount'));
+  const u = currentUser();
+  const bid = { id:'BID'+String(DB.nextBid++).padStart(5,'0'), appId:app.id, bidderId:u.email, bidderName:u.name, amount:amt, createdAt:new Date().toISOString() };
+  DB.bids.push(bid); saveDB();
+  toast('Bid Placed', `Your bid of ${fmtINR(amt)} has been recorded.`, 'success');
+  render('bidderlistingdetail');
+}
+
+function viewBidderMyBids(){
+  const mine = myBids();
+  const u = currentUser();
+  return `
+  <div class="page-head"><h1>My Bids</h1><p>All bids you've placed across auction listings.</p></div>
+  <div class="card">
+    ${mine.length===0? `<div class="empty-state"><div class="ic">📭</div>You haven't placed any bids yet. Browse <a href="#" onclick="go('bidderlistings');return false;">Auction Listings</a> to get started.</div>` :
+      `<table><thead><tr><th>Property</th><th>My Bid</th><th>Current Highest</th><th>Status</th><th>Placed On</th><th></th></tr></thead><tbody>
+      ${mine.map(b=>{
+        const app = (DB.applications||[]).find(a=>a.id===b.appId); if(!app) return '';
+        const hb = highestBid(app.id);
+        const winning = hb && hb.bidderId===u.email;
+        return `<tr class="clickable-row" onclick="openBidderListing('${app.id}')">
+          <td>${escapeHtml(app.property.address)}</td>
+          <td>${fmtINR(b.amount)}</td>
+          <td>${hb? fmtINR(hb.amount) : '—'}</td>
+          <td><span class="badge ${winning?'badge-green':'badge-orange'}">${winning?'Highest Bidder':'Outbid'}</span></td>
+          <td>${fmtDate(b.createdAt)}</td>
+          <td style="text-align:right;"><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openBidderListing('${app.id}')">View</button></td>
+        </tr>`;
+      }).join('')}
+      </tbody></table>`}
+  </div>
+  `;
+}
+
+function viewBidderSettings(){
+  const s = currentUser();
+  return `
+  <div class="page-head"><h1>Settings</h1><p>Your Bidder account details and preferences.</p></div>
   <div class="grid grid-2">
     <div class="card">
       <h3>👤 Account Details</h3>
