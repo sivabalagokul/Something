@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLMS | Legal &amp; Valuation Team Portal</title>
+<style>
+:root{
+  --navy:#1b3a5c;
+  --navy-dark:#132a44;
+  --navy-light:#264d75;
+  --teal:#2f7d78;
+  --teal-light:#e6f2f1;
+  --bg:#eef1f5;
+  --card:#ffffff;
+  --text:#1f2a37;
+  --text-mid:#4b5666;
+  --text-gray:#8a93a3;
+  --border:#e3e7ee;
+  --green:#1f9d55;
+  --green-bg:#e7f7ee;
+  --orange:#e8862c;
+  --orange-bg:#fdf1e4;
+  --red:#d64545;
+  --red-bg:#fbe9e9;
+  --purple:#6a4c9c;
+  --purple-bg:#f0ebf8;
+  --radius:12px;
+  --shadow:0 2px 10px rgba(20,40,70,0.06);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+.hidden{display:none !important;}
+a{color:var(--teal);text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 20px;border-radius:8px;border:1px solid transparent;
+  font-size:14px;font-weight:600;transition:.15s;white-space:nowrap;
+}
+.btn-primary{background:var(--navy);color:#fff;}
+.btn-primary:hover{background:var(--navy-light);}
+.btn-primary:disabled{background:#a9b6c6;cursor:not-allowed;}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-teal:hover{background:#256664;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-mid);}
+.btn-outline:hover{border-color:var(--navy);color:var(--navy);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover{background:#b83636;}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn-purple:hover{background:#573d80;}
+.btn-sm{padding:7px 14px;font-size:13px;}
+.btn-link{background:none;border:none;color:var(--teal);font-weight:600;padding:0;}
+.btn-block{width:100%;}
+
+/* ---------- Auth Screen ---------- */
+#authScreen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--navy-dark),var(--navy) 60%,var(--purple));
+  padding:20px;
+}
+.auth-wrap{display:flex;background:var(--card);border-radius:18px;overflow:hidden;max-width:920px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.auth-side{flex:1;background:linear-gradient(160deg,var(--navy),var(--navy-dark));color:#fff;padding:48px 40px;display:flex;flex-direction:column;justify-content:center;gap:16px;}
+.auth-side h1{font-size:26px;margin:0;display:flex;align-items:center;gap:10px;}
+.auth-side p{color:#c9d6e5;line-height:1.6;font-size:14.5px;margin:0;}
+.auth-side ul{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;}
+.auth-side li{font-size:13.5px;color:#dbe6f2;display:flex;gap:8px;align-items:flex-start;}
+.auth-side li::before{content:"✓";color:var(--teal);font-weight:700;}
+.auth-form{flex:1;padding:44px 40px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto;}
+.auth-form h2{margin:0 0 4px;font-size:22px;}
+.auth-form .sub{color:var(--text-gray);font-size:13.5px;margin-bottom:6px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:12.5px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:.3px;}
+.field input,.field select,.field textarea{
+  padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);background:#fbfcfd;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal);}
+.field .hint{font-size:11.5px;color:var(--text-gray);}
+.field .error{font-size:12px;color:var(--red);font-weight:600;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.auth-switch{font-size:13.5px;color:var(--text-mid);text-align:center;margin-top:6px;}
+.demo-note{background:var(--teal-light);border:1px dashed var(--teal);color:#215c58;font-size:12px;padding:8px 10px;border-radius:8px;}
+
+/* ---------- App Shell ---------- */
+#app{min-height:100vh;}
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:64px;background:var(--navy);
+  display:flex;align-items:center;padding:0 22px;gap:18px;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.hamburger{color:#fff;font-size:20px;background:none;border:none;display:none;}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;}
+.brand .logo{width:34px;height:34px;border-radius:8px;background:var(--purple);display:flex;align-items:center;justify-content:center;font-weight:800;}
+.brand .title{font-weight:800;font-size:17px;line-height:1.1;}
+.brand .subtitle{font-size:10.5px;color:#b9c7da;letter-spacing:.3px;}
+.topbar-search{flex:1;max-width:480px;margin-left:20px;position:relative;}
+.topbar-search input{
+  width:100%;padding:9px 14px 9px 36px;border-radius:8px;border:none;background:rgba(255,255,255,.12);
+  color:#fff;font-size:13.5px;
+}
+.topbar-search::before{content:"🔍";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;opacity:.7;}
+.topbar-search input::placeholder{color:#c7d3e2;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:18px;}
+.icon-btn{position:relative;background:none;border:none;color:#dfe7f1;font-size:18px;}
+.icon-dot{position:absolute;top:-2px;right:-4px;background:var(--orange);color:#fff;font-size:9px;font-weight:700;border-radius:8px;padding:1px 4px;}
+.user-chip{display:flex;align-items:center;gap:9px;color:#fff;cursor:pointer;}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;}
+.user-name{font-size:13.5px;font-weight:600;line-height:1.2;}
+.user-role{font-size:10px;color:#b9c7da;}
+
+.sidebar{
+  position:fixed;top:64px;left:0;bottom:0;width:250px;background:#fff;border-right:1px solid var(--border);
+  padding:16px 10px;overflow-y:auto;z-index:90;
+}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:9px;color:var(--text-mid);
+  font-size:14px;font-weight:600;margin-bottom:2px;cursor:pointer;border:none;background:none;width:100%;text-align:left;
+}
+.nav-item .ic{width:18px;text-align:center;color:var(--purple);font-size:15px;}
+.nav-item:hover{background:#f3f6f9;}
+.nav-item.active{background:var(--purple-bg);color:var(--navy);}
+.nav-item.active .ic{color:var(--purple);}
+.nav-badge{margin-left:auto;background:var(--orange);color:#fff;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:6px;}
+
+.main{margin-left:250px;margin-top:64px;padding:28px 32px 60px;min-height:calc(100vh - 64px);}
+.page-head{margin-bottom:22px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;}
+.page-head h1{margin:0 0 4px;font-size:24px;color:var(--navy);}
+.page-head p{margin:0;color:var(--text-gray);font-size:14px;}
+.back-link{font-size:13px;font-weight:700;color:var(--teal);cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;}
+
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-bottom:20px;border:1px solid var(--border);}
+.card h3{margin:0 0 16px;font-size:16px;color:var(--navy);display:flex;align-items:center;gap:8px;}
+.grid{display:grid;gap:20px;}
+.grid-2{grid-template-columns:1fr 1fr;}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+@media(max-width:1000px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
+
+.stat{display:flex;flex-direction:column;gap:4px;}
+.stat .lbl{font-size:11px;font-weight:700;color:var(--text-gray);text-transform:uppercase;letter-spacing:.4px;}
+.stat .val{font-size:22px;font-weight:800;color:var(--navy);}
+.stat .val.teal{color:var(--teal);}
+.stat .val.orange{color:var(--orange);}
+.stat .val.red{color:var(--red);}
+.stat .sub{font-size:11.5px;color:var(--text-gray);}
+
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+.badge-green{background:var(--green-bg);color:var(--green);}
+.badge-orange{background:var(--orange-bg);color:var(--orange);}
+.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-gray{background:#eef1f5;color:var(--text-mid);}
+.badge-navy{background:var(--teal-light);color:var(--navy);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th{text-align:left;padding:10px 8px;color:var(--text-gray);font-size:11.5px;text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid var(--border);}
+td{padding:11px 8px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr.clickable-row{cursor:pointer;}
+tr.clickable-row:hover td{background:#fafcfe;}
+
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--border);margin-bottom:18px;flex-wrap:wrap;}
+.tab{padding:10px 16px;font-size:13.5px;font-weight:600;color:var(--text-gray);border:none;background:none;border-bottom:2px solid transparent;}
+.tab.active{color:var(--navy);border-bottom-color:var(--purple);}
+
+.checklist-row{display:flex;align-items:center;gap:12px;padding:12px 10px;border:1px solid var(--border);border-radius:9px;margin-bottom:8px;background:#fbfcfd;flex-wrap:wrap;}
+.checklist-row .cl-name{flex:1;min-width:220px;font-size:13.5px;font-weight:600;color:var(--text);}
+.checklist-row select{padding:7px 10px;border-radius:7px;border:1px solid var(--border);font-size:12.5px;font-weight:700;}
+.cl-Pending{color:var(--text-gray);}
+.cl-Verified{color:var(--green);}
+.cl-Discrepancy{color:var(--red);}
+
+.timeline{display:flex;flex-direction:column;}
+.tl-item{display:flex;gap:14px;position:relative;padding-bottom:22px;}
+.tl-item:last-child{padding-bottom:0;}
+.tl-item::before{content:"";position:absolute;left:11px;top:26px;bottom:0;width:2px;background:var(--border);}
+.tl-item:last-child::before{display:none;}
+.tl-dot{width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;color:var(--text-gray);font-weight:700;}
+.tl-item.done .tl-dot{background:var(--green);border-color:var(--green);color:#fff;}
+.tl-item.current .tl-dot{background:var(--navy);border-color:var(--navy);color:#fff;}
+.tl-body h5{margin:0 0 3px;font-size:14px;color:var(--text);}
+.tl-body p{margin:0;font-size:12.5px;color:var(--text-gray);}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(15,25,40,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+.modal-box{background:#fff;border-radius:14px;padding:28px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:88vh;overflow-y:auto;}
+.modal-box h3{margin-top:0;color:var(--navy);}
+
+.toast-wrap{position:fixed;top:76px;right:22px;z-index:2000;display:flex;flex-direction:column;gap:10px;}
+.toast{background:#fff;border-left:4px solid var(--purple);box-shadow:0 8px 24px rgba(0,0,0,.15);border-radius:8px;padding:13px 16px;font-size:13.5px;min-width:260px;max-width:340px;animation:slideIn .25s ease;}
+.toast.error{border-left-color:var(--red);}
+.toast.success{border-left-color:var(--green);}
+.toast strong{display:block;margin-bottom:2px;font-size:13px;}
+@keyframes slideIn{from{transform:translateX(30px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-gray);}
+.empty-state .ic{font-size:38px;margin-bottom:10px;}
+
+.doc-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:#fbfcfd;gap:10px;flex-wrap:wrap;}
+.doc-row .name{font-size:13px;font-weight:600;}
+.doc-row .meta{font-size:11.5px;color:var(--text-gray);}
+.doc-row .actions{display:flex;gap:8px;}
+
+.case-card{border:1px solid var(--border);border-radius:10px;padding:16px;background:#fbfcfd;margin-bottom:12px;}
+.case-card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+.case-card h4{margin:0;color:var(--navy);font-size:15px;}
+.case-card .meta-row{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--text-mid);margin-top:8px;}
+.case-card .meta-row b{color:var(--text);}
+.note-item{border-left:3px solid var(--purple);padding:6px 0 6px 12px;margin-bottom:8px;font-size:12.5px;color:var(--text-mid);}
+.note-item .dt{font-size:11px;color:var(--text-gray);font-weight:700;}
+
+.countdown-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;background:var(--orange-bg);color:var(--orange);}
+.countdown-pill.overdue{background:var(--red-bg);color:var(--red);}
+
+footer.app-footer{margin-left:250px;text-align:center;padding:18px;color:var(--text-gray);font-size:12px;}
+
+@media(max-width:880px){
+  .sidebar{transform:translateX(-100%);transition:.2s;box-shadow:0 0 30px rgba(0,0,0,.2);}
+  .sidebar.open{transform:translateX(0);}
+  .main,footer.app-footer{margin-left:0;padding:20px 16px 50px;}
+  .hamburger{display:block;}
+  .topbar-search{display:none;}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
+  .auth-side{display:none;}
+  .two-col{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== AUTH SCREEN ===================== -->
+<div id="authScreen">
+  <div class="auth-wrap">
+    <div class="auth-side">
+      <h1>⚖️ HLMS Legal</h1>
+      <p>Legal &amp; Valuation Team Portal — verify property titles, clear mortgage documentation, manage SARFAESI recovery proceedings and litigation for the Housing Loan Management System.</p>
+      <ul>
+        <li>Property title &amp; document legal verification queue</li>
+        <li>SARFAESI notice issuance &amp; auction proceedings</li>
+        <li>Litigation case tracking with hearing calendar</li>
+        <li>Centralized legal notice log &amp; document center</li>
+      </ul>
+    </div>
+    <div class="auth-form" id="authFormArea"><!-- injected --></div>
+  </div>
+</div>
+
+<!-- ===================== APP SHELL ===================== -->
+<div id="app" class="hidden">
+  <div class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="brand">
+      <div class="logo">⚖️</div>
+      <div>
+        <div class="title">HLMS Legal</div>
+        <div class="subtitle">Legal &amp; Valuation Team Portal</div>
+      </div>
+    </div>
+    <div class="topbar-search"><input id="globalSearch" placeholder="Search tracking no., applicant, case no..." oninput="handleGlobalSearch(this.value)"></div>
+    <div class="topbar-right">
+      <button class="icon-btn" title="Notifications" onclick="go('notices')">🔔<span class="icon-dot" id="notifCount">0</span></button>
+      <div class="user-chip" onclick="go('profile')">
+        <div class="user-avatar" id="userInitials">NK</div>
+        <div>
+          <div class="user-name" id="userNameTop">Legal Officer</div>
+          <div class="user-role" id="userRoleTop">Legal &amp; Valuation Team</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar" id="sidebar">
+    <button class="nav-item" data-view="dashboard" onclick="go('dashboard')"><span class="ic">▦</span>Dashboard</button>
+    <button class="nav-item" data-view="queue" onclick="go('queue')"><span class="ic">☑</span>Legal Review Queue<span class="nav-badge" id="queueBadge">0</span></button>
+    <button class="nav-item" data-view="documents" onclick="go('documents')"><span class="ic">▯</span>Document Center</button>
+    <button class="nav-item" data-view="auction" onclick="go('auction')"><span class="ic">☆</span>Auction &amp; SARFAESI</button>
+    <button class="nav-item" data-view="litigation" onclick="go('litigation')"><span class="ic">🏛</span>Litigation Cases</button>
+    <button class="nav-item" data-view="notices" onclick="go('notices')"><span class="ic">✉</span>Legal Notices Log</button>
+    <button class="nav-item" data-view="profile" onclick="go('profile')"><span class="ic">◍</span>Profile Settings</button>
+    <button class="nav-item" onclick="logout()" style="margin-top:14px;border-top:1px solid var(--border);padding-top:16px;color:var(--red);"><span class="ic" style="color:var(--red);">⏻</span>Log Out</button>
+  </div>
+
+  <div class="main" id="main"><!-- view content injected here --></div>
+  <footer class="app-footer">HLMS Legal &amp; Valuation Team Portal — Demo build. Shares data locally with the HLMS Customer Portal (no server / no backend).</footer>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ======================================================================
+   HLMS — LEGAL & VALUATION TEAM PORTAL (Pure HTML/CSS/JS, no backend)
+   Reads/writes the SAME localStorage DB as the HLMS Customer Portal
+   (key: hlms_db_v1) and extends it with legal-specific fields so both
+   apps stay in sync when opened in the same browser.
+   ====================================================================== */
+
+/* ---------------------------- DB LAYER ---------------------------- */
+const DB_KEY = 'hlms_db_v1';
+function loadDB(){
+  let raw = localStorage.getItem(DB_KEY);
+  let db = raw ? JSON.parse(raw) : { users:{}, session:null, applications:[], drafts:[], notifications:[], serviceRequests:[], nextTrack:1001, nextReq:5001 };
+  // Legal-portal schema extensions (safe additive migration)
+  if(!db.staff) db.staff = {};
+  if(!db.legalSession) db.legalSession = null;
+  if(!db.legalCases) db.legalCases = [];
+  if(!db.legalNotices) db.legalNotices = [];
+  if(!db.nextCase) db.nextCase = 1;
+  if(!db.nextNotice) db.nextNotice = 1;
+  if(Object.keys(db.staff).length===0){
+    db.staff['legal@hlms.com'] = { email:'legal@hlms.com', password:'Legal@123', name:'Neha Kulkarni', role:'Senior Legal Officer', dept:'Legal & Valuation Team' };
+    db.staff['legalhead@hlms.com'] = { email:'legalhead@hlms.com', password:'Legal@123', name:'Arvind Rao', role:'Legal Team Lead', dept:'Legal & Valuation Team' };
+  }
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+  return db;
+}
+function saveDB(){ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }
+let DB = loadDB();
+
+/* ---------------------------- HELPERS ---------------------------- */
+function $(sel,root){ return (root||document).querySelector(sel); }
+function $all(sel,root){ return Array.from((root||document).querySelectorAll(sel)); }
+function fmtINR(n){ n = Math.round(n||0); return '₹' + n.toLocaleString('en-IN'); }
+function fmtDate(d){ if(!d) return '—'; const dt = new Date(d); return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function addDays(date,days){ const d = new Date(date); d.setDate(d.getDate()+days); return d.toISOString(); }
+function daysBetween(a,b){ return Math.ceil((new Date(a)-new Date(b))/86400000); }
+function uid(prefix){ return prefix+'_'+Math.random().toString(36).slice(2,9); }
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function currentStaff(){ return DB.legalSession ? DB.staff[DB.legalSession] : null; }
+function toast(title,msg,type){
+  const wrap = $('#toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast'+(type?(' '+type):'');
+  el.innerHTML = `<strong>${escapeHtml(title)}</strong>${escapeHtml(msg||'')}`;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.remove(); }, 4200);
+}
+function downloadTextFile(content, filename){
+  const blob = new Blob([content], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+  toast('Download Started', filename, 'success');
+}
+function pushNotification(userEmail, title, body, channels){
+  channels = channels || ['inapp'];
+  DB.notifications.unshift({ id:uid('ntf'), userEmail, title, body, channels, read:false, ts:new Date().toISOString() });
+  saveDB();
+}
+function notifChannels(email){
+  const u = DB.users[email]; if(!u) return ['inapp'];
+  const ch=[]; if(u.notifPrefs && u.notifPrefs.inapp) ch.push('inapp'); if(u.notifPrefs && u.notifPrefs.sms) ch.push('sms'); if(u.notifPrefs && u.notifPrefs.email) ch.push('email');
+  return ch.length?ch:['inapp'];
+}
+
+const WORKFLOW_STAGES = ['Application Submitted','Document Verification','Eligibility & Credit Check','Mortgage / Property Verification','Final Approval','Disbursement'];
+const LEGAL_STAGE_INDEX = 3;
+const LEGAL_CHECKLIST = [
+  {key:'titleDeed', label:'Title Deed / Ownership Document'},
+  {key:'encumbrance', label:'Encumbrance Certificate (13 yrs)'},
+  {key:'saleDeed', label:'Sale Deed / Agreement to Sell'},
+  {key:'noc', label:'NOC from Society / Builder / Competent Authority'},
+  {key:'valuation', label:'Property Valuation Report'},
+  {key:'taxReceipt', label:'Latest Property Tax Receipt'}
+];
+function ensureLegal(app){
+  if(!app.legal){
+    app.legal = { decision:null, decisionDate:null, officer:null, remarks:'' };
+    LEGAL_CHECKLIST.forEach(c=>{ app.legal[c.key]='Pending'; });
+  }
+  if(!app.auction){
+    app.auction = { stage:'None', noticeDate:null, noticeDueDate:null, demandAmount:0, possessionDate:null, auctionDate:null, reservePrice:0, notes:[] };
+  }
+  return app;
+}
+function calcEMI(principal, annualRate, years){
+  const r = annualRate/12/100; const n = years*12;
+  if(r===0) return principal/n;
+  return principal*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+}
+
+/* ================================================================
+   DEMO DATA SEED (only runs once, if the customer portal has never
+   been used in this browser, so the legal portal is usable standalone)
+   ================================================================ */
+function seedDemoIfEmpty(){
+  if(DB.applications.length>0) return;
+  const mk = (over)=>Object.assign({
+    id:uid('app'), createdAt:new Date().toISOString(), isDemo:true,
+    interestRate:8.5, documents:{
+      identityProof:{name:'aadhaar_card.pdf', uploadedAt:new Date().toISOString()},
+      incomeProof:{name:'salary_slips.pdf', uploadedAt:new Date().toISOString()},
+      addressProof:{name:'utility_bill.pdf', uploadedAt:new Date().toISOString()},
+      bankStatements:{name:'bank_statement_6m.pdf', uploadedAt:new Date().toISOString()},
+      propertyDocuments:{name:'property_papers.pdf', uploadedAt:new Date().toISOString()}
+    }
+  }, over);
+
+  DB.applications.push(mk({
+    trackingNo:'APP-2026-01001', userEmail:'rohan.mehta@example.com',
+    loanType:'Home Purchase Loan', loanAmount:4500000, tenureYears:20, purpose:'Purchase of resale apartment',
+    personal:{name:'Rohan Mehta', mobile:'9876500001', email:'rohan.mehta@example.com'},
+    employment:{type:'Salaried', employer:'Infotech Solutions Pvt Ltd', monthlyIncome:135000, cibil:768},
+    property:{address:'Flat 402, Willow Residency, Baner Road, Pune, MH 411045', type:'Apartment', value:6200000},
+    status:'Under Review', stageIndex:LEGAL_STAGE_INDEX
+  }));
+  DB.applications.push(mk({
+    trackingNo:'APP-2026-01004', userEmail:'sneha.kapoor@example.com',
+    loanType:'Plot Loan', loanAmount:2100000, tenureYears:15, purpose:'Purchase of residential plot',
+    personal:{name:'Sneha Kapoor', mobile:'9876500004', email:'sneha.kapoor@example.com'},
+    employment:{type:'Self-Employed', employer:'Kapoor Textiles', monthlyIncome:98000, cibil:712},
+    property:{address:'Plot No. 17, Sector 21, Kharadi, Pune, MH 411014', type:'Residential Plot', value:2900000},
+    status:'Under Review', stageIndex:LEGAL_STAGE_INDEX
+  }));
+  DB.applications.push(mk({
+    trackingNo:'APP-2025-00982', userEmail:'amit.verma@example.com',
+    loanType:'Home Construction Loan', loanAmount:3800000, tenureYears:18, purpose:'Construction on owned land',
+    personal:{name:'Amit Verma', mobile:'9876500002', email:'amit.verma@example.com'},
+    employment:{type:'Salaried', employer:'Skyline Constructions', monthlyIncome:112000, cibil:735},
+    property:{address:'Survey No. 55/2, Wagholi, Pune, MH 412207', type:'Independent House', value:5100000},
+    status:'Under Review', stageIndex:LEGAL_STAGE_INDEX
+  }));
+
+  // A disbursed, defaulted loan for Auction & SARFAESI demo
+  const startDate = addDays(new Date(), -420);
+  const sched = [];
+  for(let i=1;i<=14;i++){
+    sched.push({ no:i, dueDate: addDays(startDate, 30*i), emi:38250, principal:22000, interest:16250, balance: 3800000-22000*i, status: i<=9 ? 'Paid' : 'Due' });
+  }
+  const defApp = mk({
+    trackingNo:'APP-2024-00711', userEmail:'sunil.patil@example.com',
+    loanType:'Home Purchase Loan', loanAmount:3800000, tenureYears:15, purpose:'Purchase of independent house',
+    personal:{name:'Sunil Patil', mobile:'9876500003', email:'sunil.patil@example.com'},
+    employment:{type:'Self-Employed', employer:'Patil Traders', monthlyIncome:88000, cibil:641},
+    property:{address:'House No. 12, Shivaji Nagar, Nashik, MH 422002', type:'Independent House', value:4600000},
+    status:'Disbursed', stageIndex:5,
+    disbursement:{ date:addDays(startDate,3), amount:3800000, refNo:'DISB/2024/54210', mode:'NEFT', bank:'HDFC Bank - 1234',
+      insurance:{ property:{status:'Active', validTill:addDays(new Date(),300)}, life:{status:'Active', validTill:addDays(new Date(),3600)} } },
+    repayment:{ schedule: sched, outstandingBalance: 3800000-22000*9 }
+  });
+  DB.applications.push(defApp);
+
+  DB.legalCases.push({
+    id:uid('case'), caseNo:'CASE-2026-00001', appId:defApp.id, trackingNo:defApp.trackingNo,
+    title:'Recovery Suit — Sunil Patil vs HLMS Bank', type:'Recovery Suit',
+    court:'District Consumer Disputes Redressal Commission, Nashik', opposingParty:'Sunil Patil',
+    filedDate:addDays(new Date(),-60), nextHearing:addDays(new Date(),9), status:'Hearing Scheduled',
+    notes:[{date:addDays(new Date(),-60), text:'Suit filed for recovery of outstanding dues after 5 consecutive missed EMIs.'},
+           {date:addDays(new Date(),-20), text:'Notice served to defendant; first hearing scheduled.'}]
+  });
+
+  saveDB();
+}
+seedDemoIfEmpty();
+
+/* ---------------------------- ROUTER ---------------------------- */
+const VIEWS = ['dashboard','queue','casedetail','documents','auction','litigation','notices','profile'];
+let currentCaseId = null;
+let litigationFilter = 'All';
+function go(view){
+  if(!VIEWS.includes(view)) view='dashboard';
+  render(view);
+  $all('.nav-item').forEach(b=>b.classList.toggle('active', b.dataset.view===view || (view==='casedetail' && b.dataset.view==='queue')));
+  $('#sidebar').classList.remove('open');
+  window.scrollTo(0,0);
+}
+function toggleSidebar(){ $('#sidebar').classList.toggle('open'); }
+function openCase(appId){ currentCaseId = appId; go('casedetail'); }
+
+function refreshBadges(){
+  const pending = DB.applications.filter(a=>a.stageIndex===LEGAL_STAGE_INDEX && a.status==='Under Review').length;
+  const el = $('#queueBadge'); if(el){ el.textContent = pending; el.style.display = pending>0?'inline-block':'none'; }
+  const nc = $('#notifCount'); if(nc){ const n = DB.legalNotices.filter(n=>n.status==='Active').length; nc.textContent=n; nc.style.display = n>0?'inline-block':'none'; }
+}
+
+function render(view){
+  refreshBadges();
+  const main = $('#main');
+  switch(view){
+    case 'dashboard': main.innerHTML = viewDashboard(); break;
+    case 'queue': main.innerHTML = viewQueue(); break;
+    case 'casedetail': main.innerHTML = viewCaseDetail(); break;
+    case 'documents': main.innerHTML = viewDocuments(); break;
+    case 'auction': main.innerHTML = viewAuction(); break;
+    case 'litigation': main.innerHTML = viewLitigation(); break;
+    case 'notices': main.innerHTML = viewNotices(); break;
+    case 'profile': main.innerHTML = viewProfile(); break;
+    default: main.innerHTML = viewDashboard();
+  }
+}
+
+/* ================================================================
+   AUTH
+   ================================================================ */
+function renderAuth(){
+  $('#authFormArea').innerHTML = `
+    <h2>Legal Team Sign In</h2>
+    <div class="sub">Access the Legal &amp; Valuation Team workspace.</div>
+    <div class="field"><label>Work Email</label><input id="loginEmail" placeholder="you@hlms.example.com"><div class="error hidden" id="err_loginEmail"></div></div>
+    <div class="field"><label>Password</label><input id="loginPass" type="password" placeholder="Enter your password"><div class="error hidden" id="err_loginPass"></div></div>
+    <button class="btn btn-primary btn-block" onclick="submitStaffLogin()">Log In</button>
+    <div class="demo-note">Demo credentials — <b>legal@hlms.com</b> / <b>Legal@123</b> (Senior Legal Officer)<br>or <b>legalhead@hlms.com</b> / <b>Legal@123</b> (Legal Team Lead)</div>
+  `;
+}
+function submitStaffLogin(){
+  const emailEl=$('#loginEmail'), passEl=$('#loginPass');
+  const email = emailEl.value.trim().toLowerCase();
+  const staff = DB.staff[email];
+  let ok=true;
+  if(!staff){ emailEl.style.borderColor='var(--red)'; $('#err_loginEmail').textContent='No legal team account found with this email.'; $('#err_loginEmail').classList.remove('hidden'); ok=false; }
+  else { emailEl.style.borderColor='var(--border)'; $('#err_loginEmail').classList.add('hidden'); }
+  if(ok && staff.password!==passEl.value){ passEl.style.borderColor='var(--red)'; $('#err_loginPass').textContent='Incorrect password.'; $('#err_loginPass').classList.remove('hidden'); ok=false; }
+  else if(ok){ passEl.style.borderColor='var(--border)'; $('#err_loginPass').classList.add('hidden'); }
+  if(!ok) return;
+  DB.legalSession = email; saveDB();
+  enterApp();
+}
+function enterApp(){
+  $('#authScreen').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  const s = currentStaff();
+  $('#userNameTop').textContent = s.name;
+  $('#userRoleTop').textContent = s.role;
+  $('#userInitials').textContent = s.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+  go('dashboard');
+}
+function logout(){
+  DB.legalSession = null; saveDB();
+  $('#app').classList.add('hidden');
+  $('#authScreen').classList.remove('hidden');
+  renderAuth();
+}
+
+/* ================================================================
+   DASHBOARD
+   ================================================================ */
+function viewDashboard(){
+  const s = currentStaff();
+  const queue = DB.applications.filter(a=>a.stageIndex===LEGAL_STAGE_INDEX && a.status==='Under Review');
+  const verifiedThisMonth = DB.applications.filter(a=>{ ensureLegal(a); return a.legal.decision==='Approved' && a.legal.decisionDate && new Date(a.legal.decisionDate).getMonth()===new Date().getMonth(); }).length;
+  const auctionActive = DB.applications.filter(a=>{ ensureLegal(a); return a.auction.stage!=='None' && a.auction.stage!=='Resolved'; }).length;
+  const litigationOpen = DB.legalCases.filter(c=>c.status!=='Disposed' && c.status!=='Withdrawn').length;
+  const upcomingHearings = DB.legalCases.filter(c=>c.nextHearing && daysBetween(c.nextHearing,new Date())>=0 && daysBetween(c.nextHearing,new Date())<=14 && c.status!=='Disposed').sort((a,b)=>new Date(a.nextHearing)-new Date(b.nextHearing));
+  saveDB();
+  return `
+  <div class="page-head"><div><h1>Welcome, ${escapeHtml(s.name.split(' ')[0])}</h1><p>Here's what needs your attention across legal review, recovery and litigation today.</p></div></div>
+  <div class="grid grid-4">
+    <div class="card stat"><div class="lbl">Pending Legal Review</div><div class="val orange">${queue.length}</div><div class="sub">Property / mortgage clearance</div></div>
+    <div class="card stat"><div class="lbl">Verified This Month</div><div class="val teal">${verifiedThisMonth}</div><div class="sub">Applications cleared</div></div>
+    <div class="card stat"><div class="lbl">Active Auction / SARFAESI</div><div class="val red">${auctionActive}</div><div class="sub">Recovery proceedings in motion</div></div>
+    <div class="card stat"><div class="lbl">Open Litigation Cases</div><div class="val">${litigationOpen}</div><div class="sub">Across all courts</div></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>☑ Legal Review Queue</h3>
+      ${queue.length===0? `<div class="empty-state"><div class="ic">✅</div>No applications pending legal review.</div>` :
+        `<table><thead><tr><th>Tracking No.</th><th>Applicant</th><th>Property</th><th></th></tr></thead><tbody>
+        ${queue.slice(0,5).map(a=>`<tr class="clickable-row" onclick="openCase('${a.id}')">
+          <td>${a.trackingNo}</td><td>${escapeHtml(a.personal.name)}</td><td>${escapeHtml(a.property.type)}</td>
+          <td style="text-align:right;"><span class="badge badge-orange">Review Now</span></td>
+        </tr>`).join('')}
+        </tbody></table>
+        ${queue.length>5? `<button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="go('queue')">View all ${queue.length} cases</button>`:''}`}
+    </div>
+    <div class="card">
+      <h3>🏛 Upcoming Hearings (14 days)</h3>
+      ${upcomingHearings.length===0? `<div class="empty-state"><div class="ic">🗓</div>No hearings scheduled in the next 14 days.</div>` :
+        upcomingHearings.map(c=>`
+        <div class="doc-row">
+          <div><div class="name">${escapeHtml(c.title)}</div><div class="meta">${c.caseNo} · ${escapeHtml(c.court)}</div></div>
+          <span class="badge badge-navy">${fmtDate(c.nextHearing)}</span>
+        </div>`).join('')}
+      <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="go('litigation')">Open Litigation Cases</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>☆ Auction &amp; SARFAESI Snapshot</h3>
+    ${renderAuctionSnapshotTable()}
+    <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="go('auction')">Manage Auction &amp; SARFAESI</button>
+  </div>
+  `;
+}
+function renderAuctionSnapshotTable(){
+  const items = overdueApplications();
+  if(items.length===0) return `<div class="empty-state"><div class="ic">✅</div>No accounts currently under recovery watch.</div>`;
+  return `<table><thead><tr><th>Tracking No.</th><th>Borrower</th><th>Overdue Installments</th><th>Stage</th></tr></thead><tbody>
+    ${items.map(a=>`<tr><td>${a.trackingNo}</td><td>${escapeHtml(a.personal.name)}</td><td>${a.overdueCount}</td><td><span class="badge ${auctionBadgeClass(a.auction.stage)}">${a.auction.stage}</span></td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+/* ================================================================
+   LEGAL REVIEW QUEUE
+   ================================================================ */
+function viewQueue(){
+  const all = DB.applications.filter(a=>a.stageIndex>=LEGAL_STAGE_INDEX).map(ensureLegal);
+  const pending = all.filter(a=>a.stageIndex===LEGAL_STAGE_INDEX && a.status==='Under Review');
+  const resolved = all.filter(a=>!(a.stageIndex===LEGAL_STAGE_INDEX && a.status==='Under Review'));
+  return `
+  <div class="page-head"><div><h1>Legal Review Queue</h1><p>Applications awaiting property title &amp; mortgage document clearance.</p></div></div>
+  <div class="card">
+    <h3>🕓 Pending Legal Review (${pending.length})</h3>
+    ${pending.length===0? `<div class="empty-state"><div class="ic">✅</div>Nothing pending. New applications will appear here once Document Verification and Credit Check are complete.</div>` :
+      `<table><thead><tr><th>Tracking No.</th><th>Applicant</th><th>Loan Type</th><th>Loan Amount</th><th>Property Type</th><th></th></tr></thead><tbody>
+      ${pending.map(a=>`<tr class="clickable-row" onclick="openCase('${a.id}')">
+        <td>${a.trackingNo}</td><td>${escapeHtml(a.personal.name)}</td><td>${escapeHtml(a.loanType)}</td>
+        <td>${fmtINR(a.loanAmount)}</td><td>${escapeHtml(a.property.type)}</td>
+        <td style="text-align:right;"><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openCase('${a.id}')">Review</button></td>
+      </tr>`).join('')}</tbody></table>`}
+  </div>
+  <div class="card">
+    <h3>📋 Recently Actioned</h3>
+    ${resolved.length===0? `<div class="empty-state"><div class="ic">📭</div>No history yet.</div>` :
+      `<table><thead><tr><th>Tracking No.</th><th>Applicant</th><th>Decision</th><th>Officer</th><th>Date</th></tr></thead><tbody>
+      ${resolved.slice(0,10).map(a=>`<tr class="clickable-row" onclick="openCase('${a.id}')">
+        <td>${a.trackingNo}</td><td>${escapeHtml(a.personal.name)}</td>
+        <td><span class="badge ${decisionBadgeClass(a.legal.decision)}">${a.legal.decision||'Not yet reviewed'}</span></td>
+        <td>${escapeHtml(a.legal.officer||'—')}</td><td>${fmtDate(a.legal.decisionDate)}</td>
+      </tr>`).join('')}</tbody></table>`}
+  </div>
+  `;
+}
+function decisionBadgeClass(d){
+  if(d==='Approved') return 'badge-green';
+  if(d==='Rejected') return 'badge-red';
+  if(d==='Query Raised') return 'badge-orange';
+  return 'badge-gray';
+}
+
+/* ================================================================
+   CASE DETAIL (Property & Document Legal Verification)
+   ================================================================ */
+function viewCaseDetail(){
+  const app = DB.applications.find(a=>a.id===currentCaseId);
+  if(!app) return `<div class="empty-state"><div class="ic">⚠️</div>Case not found.</div><button class="btn btn-outline btn-sm" onclick="go('queue')">Back to Queue</button>`;
+  ensureLegal(app);
+  const allVerified = LEGAL_CHECKLIST.every(c=>app.legal[c.key]==='Verified');
+  const anyDiscrepancy = LEGAL_CHECKLIST.some(c=>app.legal[c.key]==='Discrepancy');
+  const docs = Object.entries(app.documents||{});
+  return `
+  <div class="back-link" onclick="go('queue')">← Back to Legal Review Queue</div>
+  <div class="page-head">
+    <div><h1>${app.trackingNo}</h1><p>${escapeHtml(app.loanType)} · ${escapeHtml(app.personal.name)}</p></div>
+    <span class="badge ${decisionBadgeClass(app.legal.decision)}">${app.legal.decision || 'Awaiting Review'}</span>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>👤 Applicant &amp; Loan Details</h3>
+      <table><tbody>
+        <tr><td>Applicant Name</td><td style="text-align:right;">${escapeHtml(app.personal.name)}</td></tr>
+        <tr><td>Mobile</td><td style="text-align:right;">${escapeHtml(app.personal.mobile||'—')}</td></tr>
+        <tr><td>Loan Type</td><td style="text-align:right;">${escapeHtml(app.loanType)}</td></tr>
+        <tr><td>Loan Amount</td><td style="text-align:right;">${fmtINR(app.loanAmount)}</td></tr>
+        <tr><td>Tenure</td><td style="text-align:right;">${app.tenureYears} years</td></tr>
+        <tr><td>Employment</td><td style="text-align:right;">${escapeHtml((app.employment&&app.employment.type)||'—')}</td></tr>
+        <tr><td>CIBIL Score</td><td style="text-align:right;">${(app.employment&&app.employment.cibil)||'—'}</td></tr>
+      </tbody></table>
+    </div>
+    <div class="card">
+      <h3>⌂ Property Details</h3>
+      <table><tbody>
+        <tr><td>Address</td><td style="text-align:right;">${escapeHtml(app.property.address)}</td></tr>
+        <tr><td>Property Type</td><td style="text-align:right;">${escapeHtml(app.property.type)}</td></tr>
+        <tr><td>Declared Value</td><td style="text-align:right;">${fmtINR(app.property.value)}</td></tr>
+        <tr><td>Loan-to-Value (LTV)</td><td style="text-align:right;">${Math.round(app.loanAmount/app.property.value*100)}%</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📄 Submitted Documents</h3>
+    ${docs.length===0? `<div class="empty-state"><div class="ic">📭</div>No documents uploaded yet.</div>` :
+      docs.map(([k,v])=>v?`<div class="doc-row">
+        <div><div class="name">${escapeHtml(v.name||k)}</div><div class="meta">Uploaded ${fmtDate(v.uploadedAt||app.createdAt)}</div></div>
+        <div class="actions"><button class="btn btn-outline btn-sm" onclick="downloadTextFile('Placeholder content for '+'${escapeHtml(v.name||k)}','${escapeHtml(v.name||k)}.txt')">View</button></div>
+      </div>`:'').join('')}
+  </div>
+
+  <div class="card">
+    <h3>⚖️ Legal &amp; Title Verification Checklist</h3>
+    ${LEGAL_CHECKLIST.map(c=>`
+      <div class="checklist-row">
+        <div class="cl-name">${c.label}</div>
+        <select class="cl-${app.legal[c.key]}" onchange="setChecklistStatus('${app.id}','${c.key}',this.value)">
+          <option value="Pending" ${app.legal[c.key]==='Pending'?'selected':''}>Pending</option>
+          <option value="Verified" ${app.legal[c.key]==='Verified'?'selected':''}>Verified</option>
+          <option value="Discrepancy" ${app.legal[c.key]==='Discrepancy'?'selected':''}>Discrepancy Found</option>
+        </select>
+      </div>`).join('')}
+    <div class="field" style="margin-top:14px;">
+      <label>Legal Remarks / Notes</label>
+      <textarea id="legalRemarks" rows="3" placeholder="Add any observations, discrepancies or conditions for approval...">${escapeHtml(app.legal.remarks||'')}</textarea>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="saveRemarks('${app.id}')">Save Remarks</button>
+  </div>
+
+  <div class="card" style="${allVerified?'background:var(--green-bg);':anyDiscrepancy?'background:var(--red-bg);':''}box-shadow:none;">
+    ${allVerified? `<b style="color:var(--green);font-size:13.5px;">✓ All checklist items verified. This case is ready to be forwarded for final approval.</b>` :
+      anyDiscrepancy? `<b style="color:var(--red);font-size:13.5px;">⚠ Discrepancy found in one or more documents. Consider raising a query or rejecting.</b>` :
+      `<b style="color:var(--text-mid);font-size:13.5px;">Complete the checklist above before making a decision.</b>`}
+  </div>
+
+  <div class="card">
+    <h3>✅ Decision</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <button class="btn btn-primary" ${app.legal.decision?'disabled':''} onclick="decideCase('${app.id}','Approved')">Approve &amp; Forward to Final Approval</button>
+      <button class="btn btn-outline" ${app.legal.decision?'disabled':''} onclick="decideCase('${app.id}','Query Raised')">Raise Query to Applicant</button>
+      <button class="btn btn-danger" ${app.legal.decision?'disabled':''} onclick="decideCase('${app.id}','Rejected')">Reject Application</button>
+    </div>
+    ${app.legal.decision? `<p style="font-size:12.5px;color:var(--text-gray);margin:12px 0 0;">Decision recorded by ${escapeHtml(app.legal.officer||'')} on ${fmtDate(app.legal.decisionDate)}.</p>`:''}
+  </div>
+  `;
+}
+function setChecklistStatus(appId, key, value){
+  const app = DB.applications.find(a=>a.id===appId); ensureLegal(app);
+  app.legal[key]=value; saveDB();
+  render('casedetail');
+}
+function saveRemarks(appId){
+  const app = DB.applications.find(a=>a.id===appId); ensureLegal(app);
+  app.legal.remarks = $('#legalRemarks').value.trim(); saveDB();
+  toast('Remarks Saved','Legal remarks have been updated.','success');
+}
+function decideCase(appId, decision){
+  const app = DB.applications.find(a=>a.id===appId); ensureLegal(app);
+  const s = currentStaff();
+  if(decision==='Approved'){
+    const notVerified = LEGAL_CHECKLIST.filter(c=>app.legal[c.key]!=='Verified');
+    if(notVerified.length>0){ toast('Cannot Approve','Please mark all checklist items as Verified first.'); return; }
+    app.legal.decision='Approved'; app.legal.decisionDate=new Date().toISOString(); app.legal.officer=s.name;
+    app.stageIndex = LEGAL_STAGE_INDEX+1; app.status='Under Review';
+    pushNotification(app.userEmail,'Legal Verification Completed','Your application '+app.trackingNo+' has cleared legal & property verification and moved to Final Approval.', notifChannels(app.userEmail));
+    toast('Case Approved', app.trackingNo+' forwarded to Final Approval.', 'success');
+  } else if(decision==='Query Raised'){
+    app.legal.decision='Query Raised'; app.legal.decisionDate=new Date().toISOString(); app.legal.officer=s.name;
+    app.status='Under Review';
+    pushNotification(app.userEmail,'Additional Information Required','The Legal team has raised a query on your application '+app.trackingNo+'. Please check remarks: '+(app.legal.remarks||'See portal for details.'), notifChannels(app.userEmail));
+    toast('Query Raised', 'Applicant has been notified.', 'success');
+  } else if(decision==='Rejected'){
+    app.legal.decision='Rejected'; app.legal.decisionDate=new Date().toISOString(); app.legal.officer=s.name;
+    app.status='Rejected';
+    pushNotification(app.userEmail,'Application Rejected','Your application '+app.trackingNo+' could not be approved due to legal/title verification issues. Remarks: '+(app.legal.remarks||'Contact support for details.'), notifChannels(app.userEmail));
+    toast('Case Rejected', app.trackingNo+' has been rejected.', 'success');
+  }
+  saveDB();
+  render('casedetail');
+}
+
+/* ================================================================
+   DOCUMENT CENTER
+   ================================================================ */
+function viewDocuments(){
+  const apps = DB.applications;
+  let rows = [];
+  apps.forEach(a=>{
+    Object.entries(a.documents||{}).forEach(([k,v])=>{ if(v) rows.push({trackingNo:a.trackingNo, applicant:a.personal.name, name:v.name||k, date:v.uploadedAt||a.createdAt}); });
+  });
+  rows.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  return `
+  <div class="page-head"><div><h1>Document Center</h1><p>All customer-submitted documents across applications, in one place.</p></div></div>
+  <div class="card">
+    ${rows.length===0? `<div class="empty-state"><div class="ic">📭</div>No documents available.</div>` :
+      `<table><thead><tr><th>Tracking No.</th><th>Applicant</th><th>Document</th><th>Uploaded</th><th></th></tr></thead><tbody>
+      ${rows.map(r=>`<tr>
+        <td>${r.trackingNo}</td><td>${escapeHtml(r.applicant)}</td><td>${escapeHtml(r.name)}</td><td>${fmtDate(r.date)}</td>
+        <td style="text-align:right;"><button class="btn btn-outline btn-sm" onclick="downloadTextFile('Placeholder content for '+'${escapeHtml(r.name)}','${escapeHtml(r.name)}.txt')">View</button></td>
+      </tr>`).join('')}</tbody></table>`}
+  </div>
+  `;
+}
+
+/* ================================================================
+   AUCTION & SARFAESI MANAGEMENT
+   ================================================================ */
+function overdueApplications(){
+  const today = new Date();
+  return DB.applications.filter(a=>a.repayment && a.repayment.schedule).map(a=>{
+    ensureLegal(a);
+    a.repayment.schedule.forEach(s=>{ if(s.status!=='Paid' && new Date(s.dueDate)<today) s.status='Overdue'; });
+    const overdueCount = a.repayment.schedule.filter(s=>s.status==='Overdue').length;
+    return Object.assign({overdueCount}, a);
+  }).filter(a=>a.overdueCount>0);
+}
+function auctionBadgeClass(stage){
+  if(stage==='None') return 'badge-gray';
+  if(stage==='Notice Issued') return 'badge-orange';
+  if(stage==='Possession') return 'badge-red';
+  if(stage==='Auction Scheduled') return 'badge-red';
+  if(stage==='Resolved') return 'badge-green';
+  return 'badge-gray';
+}
+function viewAuction(){
+  const list = overdueApplications();
+  saveDB();
+  return `
+  <div class="page-head"><div><h1>Auction &amp; SARFAESI Management</h1><p>Manage recovery proceedings for seriously overdue, secured loan accounts.</p></div></div>
+  <div class="card" style="background:var(--purple-bg);box-shadow:none;">
+    <p style="margin:0;font-size:13px;color:var(--text-mid);">Under the SARFAESI Act, a Demand Notice under Section 13(2) gives the borrower 60 days to repay before further recovery action (symbolic possession, e-auction) may proceed.</p>
+  </div>
+  ${list.length===0? `<div class="card"><div class="empty-state"><div class="ic">✅</div>No accounts currently overdue enough to require recovery action.</div></div>` :
+    list.map(a=>renderAuctionCard(a)).join('')}
+  `;
+}
+function renderAuctionCard(app){
+  const st = app.auction;
+  let noticeInfo = '';
+  if(st.stage!=='None' && st.noticeDueDate){
+    const remaining = daysBetween(st.noticeDueDate, new Date());
+    noticeInfo = `<span class="countdown-pill ${remaining<0?'overdue':''}">${remaining<0? (Math.abs(remaining)+' days past notice period') : (remaining+' days remaining in notice period')}</span>`;
+  }
+  return `
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h3 style="margin-bottom:6px;">${app.trackingNo} — ${escapeHtml(app.personal.name)}</h3>
+        <div style="font-size:12.5px;color:var(--text-mid);">${escapeHtml(app.property.address)}</div>
+      </div>
+      <span class="badge ${auctionBadgeClass(st.stage)}">${st.stage}</span>
+    </div>
+    <table style="margin-top:14px;"><tbody>
+      <tr><td>Overdue Installments</td><td style="text-align:right;">${app.overdueCount}</td></tr>
+      <tr><td>Outstanding Balance</td><td style="text-align:right;">${fmtINR(app.repayment.outstandingBalance)}</td></tr>
+      <tr><td>Property Value</td><td style="text-align:right;">${fmtINR(app.property.value)}</td></tr>
+      ${st.noticeDate? `<tr><td>Demand Notice Issued</td><td style="text-align:right;">${fmtDate(st.noticeDate)} ${noticeInfo}</td></tr>`:''}
+      ${st.auctionDate? `<tr><td>e-Auction Scheduled</td><td style="text-align:right;">${fmtDate(st.auctionDate)} · Reserve ${fmtINR(st.reservePrice)}</td></tr>`:''}
+    </tbody></table>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+      ${st.stage==='None'? `<button class="btn btn-danger btn-sm" onclick="issueDemandNotice('${app.id}')">Issue Demand Notice (Sec 13(2))</button>`:''}
+      ${st.stage==='Notice Issued'? `<button class="btn btn-danger btn-sm" onclick="takePossession('${app.id}')">Record Symbolic Possession</button>`:''}
+      ${st.stage==='Possession'? `<button class="btn btn-danger btn-sm" onclick="openAuctionScheduleModal('${app.id}')">Schedule e-Auction</button>`:''}
+      ${st.stage!=='None' && st.stage!=='Resolved'? `<button class="btn btn-outline btn-sm" onclick="resolveAuction('${app.id}')">Mark Resolved / Withdraw</button>`:''}
+      ${st.stage!=='None'? `<button class="btn btn-outline btn-sm" onclick="openNewCaseModal('${app.id}')">File Litigation Case</button>`:''}
+    </div>
+  </div>`;
+}
+function issueDemandNotice(appId){
+  const app = DB.applications.find(a=>a.id===appId); ensureLegal(app);
+  const s = currentStaff();
+  app.auction.stage='Notice Issued';
+  app.auction.noticeDate=new Date().toISOString();
+  app.auction.noticeDueDate=addDays(new Date(),60);
+  app.auction.demandAmount = app.repayment.outstandingBalance;
+  saveDB();
+  const notice = {
+    id:uid('ntc'), noticeNo:'SARFAESI/13(2)/'+new Date().getFullYear()+'/'+String(DB.nextNotice++).padStart(5,'0'),
+    appId:app.id, trackingNo:app.trackingNo, borrower:app.personal.name, type:'Demand Notice — Section 13(2), SARFAESI Act',
+    issueDate:new Date().toISOString(), dueDate:app.auction.noticeDueDate, status:'Active', officer:s.name,
+    content:`HOUSING LOAN MANAGEMENT SYSTEM\nLEGAL & VALUATION TEAM\n\nDEMAND NOTICE UNDER SECTION 13(2) OF THE SARFAESI ACT, 2002\n\nDate: ${fmtDate(new Date())}\nLoan Account No.: ${app.trackingNo}\n\nTo,\n${app.personal.name}\n${app.property.address}\n\nDear Sir/Madam,\n\nYour loan account has become classified as a Non-Performing Asset due to non-payment of dues. You are hereby called upon to repay the outstanding amount of ${fmtINR(app.repayment.outstandingBalance)} within 60 days of this notice, failing which the Bank may exercise its rights under Section 13(4) of the SARFAESI Act, 2002, including taking possession of the secured asset described below and its sale by e-auction, without further reference to you.\n\nSecured Asset: ${app.property.address}\n\nThis is a system-generated legal notice for demonstration purposes.\n\nFor HLMS Bank\nLegal & Valuation Team\n${s.name}, ${s.role}`
+  };
+  DB.legalNotices.unshift(notice); saveDB();
+  pushNotification(app.userEmail, 'Legal Notice Issued', 'A Demand Notice under Section 13(2) of the SARFAESI Act has been issued on your loan account '+app.trackingNo+'. Please clear outstanding dues within 60 days.', notifChannels(app.userEmail));
+  toast('Demand Notice Issued', notice.noticeNo, 'success');
+  render('auction');
+}
+function takePossession(appId){
+  const app = DB.applications.find(a=>a.id===appId); ensureLegal(app);
+  app.auction.stage='Possession'; app.auction.possessionDate=new Date().toISOString();
+  app.auction.notes.push({date:new Date().toISOString(), text:'Symbolic possession of secured asset recorded under Section 13(4).'});
+  saveDB();
+  pushNotification(app.userEmail,'Possession Notice','Symbolic possession of the secured property under loan account '+app.trackingNo+' has been recorded.', notifChannels(app.userEmail));
+  toast('Possession Recorded', app.trackingNo, 'success');
+  render('auction');
+}
+function openAuctionScheduleModal(appId){
+  showModal('Schedule e-Auction', `
+    <div class="field"><label>Auction Date</label><input type="date" id="mAuctionDate" min="${new Date().toISOString().slice(0,10)}"></div>
+    <div class="field"><label>Reserve Price (₹)</label><input type="number" id="mReservePrice" placeholder="e.g. 4200000"></div>
+    <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="scheduleAuction('${appId}')">Confirm Schedule</button>
+  `);
+}
+function scheduleAuction(appId){
+  const date = $('#mAuctionDate').value, price = Number($('#mReservePrice').value||0);
+  if(!date || !price){ toast('Missing Details','Please provide both auction date and reserve price.'); return; }
+  const app = DB.applications.find(a=>a.id===appId); ensureLegal(app);
+  app.auction.stage='Auction Scheduled'; app.auction.auctionDate=new Date(date).toISOString(); app.auction.reservePrice=price;
+  saveDB();
+  const notice = { id:uid('ntc'), noticeNo:'AUCTION/'+new Date().getFullYear()+'/'+String(DB.nextNotice++).padStart(5,'0'),
+    appId:app.id, trackingNo:app.trackingNo, borrower:app.personal.name, type:'e-Auction Sale Notice',
+    issueDate:new Date().toISOString(), dueDate:app.auction.auctionDate, status:'Active', officer:currentStaff().name,
+    content:`HOUSING LOAN MANAGEMENT SYSTEM\nSALE NOTICE FOR e-AUCTION OF SECURED ASSET\n\nLoan Account No.: ${app.trackingNo}\nBorrower: ${app.personal.name}\nProperty: ${app.property.address}\nAuction Date: ${fmtDate(app.auction.auctionDate)}\nReserve Price: ${fmtINR(price)}\n\nThis is a system-generated legal notice for demonstration purposes.` };
+  DB.legalNotices.unshift(notice); saveDB();
+  pushNotification(app.userEmail,'e-Auction Scheduled','An e-auction sale of the secured property under loan account '+app.trackingNo+' has been scheduled for '+fmtDate(app.auction.auctionDate)+'.', notifChannels(app.userEmail));
+  $('.modal-overlay')?.remove();
+  toast('Auction Scheduled', fmtDate(app.auction.auctionDate), 'success');
+  render('auction');
+}
+function resolveAuction(appId){
+  const app = DB.applications.find(a=>a.id===appId); ensureLegal(app);
+  app.auction.stage='Resolved';
+  app.auction.notes.push({date:new Date().toISOString(), text:'Recovery proceedings resolved / withdrawn.'});
+  saveDB();
+  pushNotification(app.userEmail,'Recovery Proceedings Resolved','Recovery proceedings on your loan account '+app.trackingNo+' have been resolved.', notifChannels(app.userEmail));
+  toast('Marked Resolved', app.trackingNo, 'success');
+  render('auction');
+}
+
+/* ================================================================
+   LITIGATION CASE TRACKER
+   ================================================================ */
+function viewLitigation(){
+  const filters = ['All','Filed','Hearing Scheduled','Reserved','Disposed','Withdrawn'];
+  let cases = DB.legalCases.slice().sort((a,b)=>new Date(a.nextHearing||0)-new Date(b.nextHearing||0));
+  if(litigationFilter!=='All') cases = cases.filter(c=>c.status===litigationFilter);
+  return `
+  <div class="page-head">
+    <div><h1>Litigation Case Tracker</h1><p>Track recovery suits, SARFAESI applications and consumer complaints across courts.</p></div>
+    <button class="btn btn-primary" onclick="openNewCaseModal()">+ File New Case</button>
+  </div>
+  <div class="tabs">${filters.map(f=>`<button class="tab ${litigationFilter===f?'active':''}" onclick="litigationFilter='${f}';render('litigation')">${f}</button>`).join('')}</div>
+  ${cases.length===0? `<div class="card"><div class="empty-state"><div class="ic">🏛</div>No litigation cases in this filter.</div></div>` :
+    cases.map(c=>`
+    <div class="case-card">
+      <div class="top">
+        <div><h4>${escapeHtml(c.title)}</h4><div style="font-size:12px;color:var(--text-gray);">${c.caseNo} · ${escapeHtml(c.type)}</div></div>
+        <span class="badge ${litigationBadgeClass(c.status)}">${c.status}</span>
+      </div>
+      <div class="meta-row">
+        <div>Court: <b>${escapeHtml(c.court)}</b></div>
+        <div>Opposing Party: <b>${escapeHtml(c.opposingParty)}</b></div>
+        <div>Filed: <b>${fmtDate(c.filedDate)}</b></div>
+        <div>Next Hearing: <b>${c.nextHearing? fmtDate(c.nextHearing):'—'}</b></div>
+        ${c.trackingNo? `<div>Loan A/C: <b>${c.trackingNo}</b></div>`:''}
+      </div>
+      <div style="margin-top:12px;">
+        ${(c.notes||[]).slice().reverse().map(n=>`<div class="note-item"><div class="dt">${fmtDate(n.date)}</div>${escapeHtml(n.text)}</div>`).join('')}
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+        <button class="btn btn-outline btn-sm" onclick="openUpdateCaseModal('${c.id}')">Update Case</button>
+        <button class="btn btn-outline btn-sm" onclick="openAddNoteModal('${c.id}')">Add Note</button>
+      </div>
+    </div>`).join('')}
+  `;
+}
+function litigationBadgeClass(status){
+  if(status==='Disposed') return 'badge-green';
+  if(status==='Withdrawn') return 'badge-gray';
+  if(status==='Reserved') return 'badge-purple';
+  return 'badge-orange';
+}
+function openNewCaseModal(appId){
+  const linkedApp = appId ? DB.applications.find(a=>a.id===appId) : null;
+  showModal('File New Litigation Case', `
+    <div class="field"><label>Case Title</label><input id="mCaseTitle" placeholder="e.g. Recovery Suit — Bank vs Borrower" value="${linkedApp?('Recovery Suit — HLMS Bank vs '+escapeHtml(linkedApp.personal.name)):''}"></div>
+    <div class="field"><label>Case Type</label>
+      <select id="mCaseType"><option>Recovery Suit</option><option>SARFAESI Application (DRT)</option><option>Consumer Complaint</option><option>Writ Petition</option><option>Other</option></select>
+    </div>
+    <div class="field"><label>Court / Forum</label><input id="mCaseCourt" placeholder="e.g. Debt Recovery Tribunal, Pune"></div>
+    <div class="field"><label>Opposing Party</label><input id="mCaseParty" value="${linkedApp?escapeHtml(linkedApp.personal.name):''}"></div>
+    <div class="two-col">
+      <div class="field"><label>Filed Date</label><input type="date" id="mCaseFiled" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div class="field"><label>Next Hearing</label><input type="date" id="mCaseHearing"></div>
+    </div>
+    <input type="hidden" id="mCaseAppId" value="${linkedApp?linkedApp.id:''}">
+    <input type="hidden" id="mCaseTrackNo" value="${linkedApp?linkedApp.trackingNo:''}">
+    <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="createCase()">File Case</button>
+  `);
+}
+function createCase(){
+  const title=$('#mCaseTitle').value.trim(), court=$('#mCaseCourt').value.trim(), party=$('#mCaseParty').value.trim();
+  if(!title||!court||!party){ toast('Missing Details','Please fill in case title, court and opposing party.'); return; }
+  const c = {
+    id:uid('case'), caseNo:'CASE-'+new Date().getFullYear()+'-'+String(DB.nextCase++).padStart(5,'0'),
+    appId: $('#mCaseAppId').value || null, trackingNo: $('#mCaseTrackNo').value || null,
+    title, type:$('#mCaseType').value, court, opposingParty:party,
+    filedDate:new Date($('#mCaseFiled').value||new Date()).toISOString(),
+    nextHearing: $('#mCaseHearing').value? new Date($('#mCaseHearing').value).toISOString() : null,
+    status:'Filed', notes:[{date:new Date().toISOString(), text:'Case filed and logged in the system.'}]
+  };
+  DB.legalCases.unshift(c); saveDB();
+  $('.modal-overlay')?.remove();
+  toast('Case Filed', c.caseNo, 'success');
+  litigationFilter='All'; render('litigation');
+}
+function openUpdateCaseModal(caseId){
+  const c = DB.legalCases.find(x=>x.id===caseId);
+  showModal('Update Case — '+c.caseNo, `
+    <div class="field"><label>Status</label>
+      <select id="mUpdStatus">
+        ${['Filed','Hearing Scheduled','Reserved','Disposed','Withdrawn'].map(s=>`<option ${c.status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+    <div class="field"><label>Next Hearing Date</label><input type="date" id="mUpdHearing" value="${c.nextHearing?new Date(c.nextHearing).toISOString().slice(0,10):''}"></div>
+    <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="updateCase('${c.id}')">Save Update</button>
+  `);
+}
+function updateCase(caseId){
+  const c = DB.legalCases.find(x=>x.id===caseId);
+  c.status = $('#mUpdStatus').value;
+  c.nextHearing = $('#mUpdHearing').value ? new Date($('#mUpdHearing').value).toISOString() : null;
+  c.notes.push({date:new Date().toISOString(), text:'Status updated to "'+c.status+'"'+(c.nextHearing?', next hearing set for '+fmtDate(c.nextHearing)+'.':'.')});
+  saveDB();
+  $('.modal-overlay')?.remove();
+  toast('Case Updated', c.caseNo, 'success');
+  render('litigation');
+}
+function openAddNoteModal(caseId){
+  showModal('Add Case Note', `
+    <div class="field"><label>Note</label><textarea id="mNoteText" rows="4" placeholder="e.g. Written statement filed by opposing counsel..."></textarea></div>
+    <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="addCaseNote('${caseId}')">Add Note</button>
+  `);
+}
+function addCaseNote(caseId){
+  const text = $('#mNoteText').value.trim();
+  if(!text){ toast('Empty Note','Please enter note text.'); return; }
+  const c = DB.legalCases.find(x=>x.id===caseId);
+  c.notes.push({date:new Date().toISOString(), text}); saveDB();
+  $('.modal-overlay')?.remove();
+  toast('Note Added', c.caseNo, 'success');
+  render('litigation');
+}
+
+/* ================================================================
+   LEGAL NOTICES LOG
+   ================================================================ */
+function viewNotices(){
+  const notices = DB.legalNotices.slice().sort((a,b)=>new Date(b.issueDate)-new Date(a.issueDate));
+  return `
+  <div class="page-head">
+    <div><h1>Legal Notices Log</h1><p>All demand, possession and auction notices issued, plus manual legal correspondence.</p></div>
+    <button class="btn btn-primary" onclick="openDraftNoticeModal()">+ Draft Custom Notice</button>
+  </div>
+  <div class="card">
+    ${notices.length===0? `<div class="empty-state"><div class="ic">✉️</div>No notices issued yet.</div>` :
+      `<table><thead><tr><th>Notice No.</th><th>Type</th><th>Loan A/C</th><th>Borrower</th><th>Issued</th><th>Status</th><th></th></tr></thead><tbody>
+      ${notices.map(n=>`<tr>
+        <td>${n.noticeNo}</td><td>${escapeHtml(n.type)}</td><td>${n.trackingNo||'—'}</td><td>${escapeHtml(n.borrower||'—')}</td>
+        <td>${fmtDate(n.issueDate)}</td><td><span class="badge ${n.status==='Active'?'badge-orange':'badge-gray'}">${n.status}</span></td>
+        <td style="text-align:right;"><button class="btn btn-outline btn-sm" onclick="downloadTextFile(\`${(n.content||'').replace(/`/g,"'")}\`,'${n.noticeNo.replace(/\//g,'_')}.txt')">Download</button></td>
+      </tr>`).join('')}</tbody></table>`}
+  </div>
+  `;
+}
+function openDraftNoticeModal(){
+  const apps = DB.applications;
+  showModal('Draft Custom Legal Notice', `
+    <div class="field"><label>Application</label>
+      <select id="mNoticeApp"><option value="">— Not linked to an application —</option>${apps.map(a=>`<option value="${a.id}">${a.trackingNo} — ${escapeHtml(a.personal.name)}</option>`).join('')}</select>
+    </div>
+    <div class="field"><label>Notice Type</label><input id="mNoticeType" placeholder="e.g. Legal Opinion Letter, Cease &amp; Desist"></div>
+    <div class="field"><label>Notice Content</label><textarea id="mNoticeContent" rows="6" placeholder="Type the full notice text..."></textarea></div>
+    <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="draftNotice()">Save &amp; Log Notice</button>
+  `);
+}
+function draftNotice(){
+  const appId = $('#mNoticeApp').value, type = $('#mNoticeType').value.trim(), content = $('#mNoticeContent').value.trim();
+  if(!type||!content){ toast('Missing Details','Please provide a notice type and content.'); return; }
+  const app = appId ? DB.applications.find(a=>a.id===appId) : null;
+  const n = { id:uid('ntc'), noticeNo:'LEGAL/'+new Date().getFullYear()+'/'+String(DB.nextNotice++).padStart(5,'0'),
+    appId: appId||null, trackingNo: app?app.trackingNo:null, borrower: app?app.personal.name:null,
+    type, issueDate:new Date().toISOString(), dueDate:null, status:'Active', officer:currentStaff().name, content };
+  DB.legalNotices.unshift(n); saveDB();
+  if(app) pushNotification(app.userEmail, type, 'A new legal communication has been issued regarding your loan account '+app.trackingNo+'.', notifChannels(app.userEmail));
+  $('.modal-overlay')?.remove();
+  toast('Notice Logged', n.noticeNo, 'success');
+  render('notices');
+}
+
+/* ================================================================
+   PROFILE
+   ================================================================ */
+function viewProfile(){
+  const s = currentStaff();
+  return `
+  <div class="page-head"><div><h1>Profile Settings</h1><p>Your Legal &amp; Valuation Team account details.</p></div></div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>👤 Account Details</h3>
+      <table><tbody>
+        <tr><td>Name</td><td style="text-align:right;">${escapeHtml(s.name)}</td></tr>
+        <tr><td>Email</td><td style="text-align:right;">${escapeHtml(s.email)}</td></tr>
+        <tr><td>Role</td><td style="text-align:right;">${escapeHtml(s.role)}</td></tr>
+        <tr><td>Department</td><td style="text-align:right;">${escapeHtml(s.dept)}</td></tr>
+      </tbody></table>
+    </div>
+    <div class="card">
+      <h3>📊 Your Activity Summary</h3>
+      <table><tbody>
+        <tr><td>Cases Reviewed</td><td style="text-align:right;">${DB.applications.filter(a=>a.legal&&a.legal.officer===s.name).length}</td></tr>
+        <tr><td>Notices Issued</td><td style="text-align:right;">${DB.legalNotices.filter(n=>n.officer===s.name).length}</td></tr>
+        <tr><td>Litigation Cases Logged</td><td style="text-align:right;">${DB.legalCases.length}</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <div class="card">
+    <p style="font-size:12.5px;color:var(--text-gray);margin:0;">This is a demo portal — password changes and org-directory sync are not implemented. Contact your system administrator to update account details.</p>
+  </div>
+  `;
+}
+
+/* ================================================================
+   GLOBAL SEARCH
+   ================================================================ */
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter' && document.activeElement && document.activeElement.id==='globalSearch'){
+    const val = document.activeElement.value.trim().toLowerCase();
+    if(!val) return;
+    const app = DB.applications.find(a=>a.trackingNo.toLowerCase().includes(val) || a.personal.name.toLowerCase().includes(val));
+    const c = DB.legalCases.find(x=>x.caseNo.toLowerCase().includes(val) || x.title.toLowerCase().includes(val));
+    if(app){ openCase(app.id); }
+    else if(c){ litigationFilter='All'; go('litigation'); }
+    else toast('No Results','Try a tracking number, applicant name or case number.');
+  }
+});
+function handleGlobalSearch(){ /* live suggestions omitted in this demo; press Enter to search */ }
+
+/* ================================================================
+   MODAL
+   ================================================================ */
+function showModal(title, bodyHtml){
+  const overlay = document.createElement('div');
+  overlay.className='modal-overlay';
+  overlay.innerHTML = `<div class="modal-box"><h3>${escapeHtml(title)}</h3>${bodyHtml}<div style="text-align:right;margin-top:10px;"><button class="btn btn-outline btn-sm" onclick="this.closest('.modal-overlay').remove()">Cancel</button></div></div>`;
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+/* ================================================================
+   INIT
+   ================================================================ */
+(function init(){
+  renderAuth();
+  if(DB.legalSession && DB.staff[DB.legalSession]){
+    enterApp();
+  }
+})();
+</script>
+</body>
+</html>
